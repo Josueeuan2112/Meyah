@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  /* Verde jade maya */
+  --color-meyah-jade-50: #E8F5F3;
+  --color-meyah-jade-500: #1B998B;
+  --color-meyah-jade-700: #147068;
+  --color-meyah-jade-900: #0A3D38;
+
+  /* Terracota */
+  --color-meyah-terracota-50: #FDF1ED;
+  --color-meyah-terracota-500: #C84B31;
+  --color-meyah-terracota-700: #9C3622;
+
+  /* Crema (fondos) */
+  --color-meyah-crema-50: #FAF7F2;
+  --color-meyah-crema-100: #F2EDE3;
+
+  /* Tinta (textos) */
+  --color-meyah-tinta-900: #2D2A26;
+  --color-meyah-tinta-600: #5C5852;
+}
+
+/* Tokens semánticos de shadcn → mapeados a paleta Meyah */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --background: #FAF7F2;
+  --foreground: #2D2A26;
+  --primary: #1B998B;
+  --primary-foreground: #ffffff;
+  --secondary: #F2EDE3;
+  --secondary-foreground: #2D2A26;
+  --accent: #F2EDE3;
+  --accent-foreground: #2D2A26;
+  --destructive: #C84B31;
+  --border: #E0D9CF;
+  --input: #E0D9CF;
+  --ring: #1B998B;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  background-color: #FAF7F2;
+  color: #2D2A26;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
