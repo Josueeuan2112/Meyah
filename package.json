@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen:types": "supabase gen types --lang=typescript --linked --schema public > src/shared/types/database.types.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@supabase/supabase-js": "^2.106.1",
     "@tanstack/react-query": "^5.100.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -34,6 +36,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "supabase": "^2.101.0",
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
