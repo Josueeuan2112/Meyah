@@ -1,4 +1,8 @@
+import type { ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+import { AuthProvider } from '@/features/auth/hooks/useAuth'
+import { Toaster } from '@/shared/ui/sonner'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -11,13 +15,16 @@ const queryClient = new QueryClient({
 })
 
 interface ProvidersProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <AuthProvider>
+        {children}
+        <Toaster richColors position="top-right" />
+      </AuthProvider>
     </QueryClientProvider>
   )
 }
