@@ -11,11 +11,14 @@
     "gen:types": "supabase gen types --lang=typescript --linked --schema public > src/shared/types/database.types.ts"
   },
   "dependencies": {
+    "@fontsource/fraunces": "^5.2.9",
+    "@fontsource/inter": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@supabase/supabase-js": "^2.106.1",
     "@tanstack/react-query": "^5.100.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.40.0",
     "lucide-react": "^1.16.0",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",

@@ -90,7 +90,11 @@ features/<nombre>/
 - `accent` → meyah-terracota
 - `foreground` → meyah-tinta
 
-**Tipografía:** Por definir en Etapa 4 (sugerencia: Inter para texto + Fraunces o DM Serif para títulos).
+**Tipografía** (auto-hospedada vía `@fontsource`, sin Google CDN):
+- `font-display` → **Fraunces** (títulos h1–h6) — pesos 400, 500, 600, 700
+- `font-sans` → **Inter** (cuerpo, default de body) — pesos 400, 500
+- Los `<h1>`–`<h6>` toman Fraunces por default vía CSS base en `globals.css`.
+- Utility classes de Tailwind: `font-display` y `font-sans`.
 
 ## ⚙️ Convenciones de código
 
@@ -118,6 +122,21 @@ features/<nombre>/
 - **Tailwind first.** Nada de CSS modules ni styled-components.
 - Cuando hay variantes complejas → usar `cva` (ya viene con shadcn).
 - Combinar clases con `cn()` de `@/shared/lib/utils`.
+
+### Responsive (mobile-first)
+- Diseño SIEMPRE mobile-first: las clases base de Tailwind aplican a móvil; los prefijos `sm:`, `md:`, `lg:` AGREGAN estilos para pantallas más grandes.
+- Toda página y componente debe verse correctamente en móvil (320–414px de ancho) antes de considerarse terminado.
+- Verificar SIEMPRE en DevTools (modo responsive) antes de declarar un componente listo.
+- Breakpoints estándar de Tailwind: `sm=640px`, `md=768px`, `lg=1024px`, `xl=1280px`.
+- Prioridad de uso real de Meyah: ~75% móvil, ~25% desktop. El móvil NO es secundario.
+
+### Datos + iteración vs JSX repetido
+- Si hay 3+ elementos similares (misma estructura, distinta data) → preferir array de datos + `.map()` para iterar.
+- Si los elementos tienen estructuras o propósitos distintos → mantener JSX separado, NO forzar iteración.
+- Si hay solo 2 elementos similares → criterio: iterar si la lógica lo amerita, mantener separado si la legibilidad gana.
+- Regla mental: la diferencia es solo data → itera. La diferencia es estructura → no fuerces.
+- Ejemplos: lista de pasos/cards/items repetitivos = iterar. Hero único, Header, Footer, formularios complejos = NO iterar.
+- NUNCA aplicar iteración para "verse limpio" si el resultado es más difícil de leer.
 
 ### Estado y datos
 - **Estado local:** `useState` o `useReducer`.

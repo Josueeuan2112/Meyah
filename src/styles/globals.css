@@ -19,6 +19,10 @@
   /* Tinta (textos) */
   --color-meyah-tinta-900: #2D2A26;
   --color-meyah-tinta-600: #5C5852;
+
+  /* Tipografías */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
 }
 
 /* Tokens semánticos de shadcn → mapeados a paleta Meyah */
@@ -58,9 +62,13 @@ html {
 
 body {
   margin: 0;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sans);
   background-color: #FAF7F2;
   color: #2D2A26;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }
