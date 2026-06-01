@@ -28,7 +28,7 @@ export default function CompanyPage() {
     )
   }
 
-  //  Estado: error ─
+  //  Estado: error 
   if (isError) {
     return (
       <div className="flex items-center justify-center px-4 py-20">
