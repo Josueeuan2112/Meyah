@@ -6,6 +6,7 @@ import LandingPage from '@/features/landing/pages/LandingPage'
 import RegisterPage from '@/features/auth/pages/RegisterPage'
 import LoginPage from '@/features/auth/pages/LoginPage'
 import WelcomePage from '@/features/auth/pages/WelcomePage'
+import CompanyPage from '@/features/companies/pages/CompanyPage'
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
           {
             path: '/inicio',
             element: <WelcomePage />,
+          },
+          {
+            path: '/mi-empresa',
+            element: <CompanyPage />,
           },
         ],
       },
