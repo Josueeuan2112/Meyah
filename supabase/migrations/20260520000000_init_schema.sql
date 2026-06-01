@@ -60,33 +60,9 @@ COMMENT ON COLUMN public.profiles.lat_referencia IS 'Latitud de referencia del c
 COMMENT ON COLUMN public.profiles.lng_referencia IS 'Longitud de referencia del candidato (su zona base) para búsquedas geográficas.';
 COMMENT ON COLUMN public.profiles.is_searchable IS 'Si TRUE, el candidato acepta ser encontrado por empleadores en búsqueda activa (sourcing). Feature de v3. Default FALSE = privacidad máxima.';
 
--- Políticas RLS de profiles
-CREATE POLICY "profiles_select_own"
-  ON public.profiles FOR SELECT TO authenticated
-  USING (auth.uid() = id AND deleted_at IS NULL);
-
-CREATE POLICY "profiles_select_applicants"
-  ON public.profiles FOR SELECT TO authenticated
-  USING (
-    deleted_at IS NULL
-    AND EXISTS (
-      SELECT 1
-      FROM public.applications a
-      JOIN public.jobs j ON j.id = a.job_id
-      JOIN public.companies c ON c.id = j.company_id
-      WHERE a.candidato_id = profiles.id
-        AND c.owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "profiles_insert_own"
-  ON public.profiles FOR INSERT TO authenticated
-  WITH CHECK (auth.uid() = id);
-
-CREATE POLICY "profiles_update_own"
-  ON public.profiles FOR UPDATE TO authenticated
-  USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id);
+/* Las políticas RLS de profiles se crean al final de la migración porque las otras tablas 
+(companies, jobs, applications) hacen JOIN con profiles para validar el tipo de usuario y su ID en sus propias políticas. 
+Si se crean antes de la tabla de profiles, dan error por referencia a una tabla o columna inexistente. */
 
 -- ============================================================
 -- 4. TABLA: companies (empresas de empleadores)
@@ -334,6 +310,38 @@ CREATE POLICY "applications_update_employer"
     )
   );
 
+/*
+IMPORTANTE: MOVI LAS POLITICAS AL DE PROFILE AL FINAL PORQUE SI NO SE CREAN EN ORDEN, 
+NO SE PUEDEN REFERENCIAR EN LAS POLITICAS DE LAS OTRAS TABLAS (COMPANIES, JOBS, APPLICATIONS) QUE HACEN JOIN CON PROFILES PARA VALIDAR EL TIPO DE USUARIO Y SU ID. 
+SI SE CREAN ANTES DE LA TABLA DE PROFILES, DAN ERROR PORQUE NO EXISTE LA TABLA NI SUS COLUMNAS AUN.
+*/
+  -- Políticas RLS de profiles 
+CREATE POLICY "profiles_select_own"
+  ON public.profiles FOR SELECT TO authenticated
+  USING (auth.uid() = id AND deleted_at IS NULL);
+
+CREATE POLICY "profiles_select_applicants"
+  ON public.profiles FOR SELECT TO authenticated
+  USING (
+    deleted_at IS NULL
+    AND EXISTS (
+      SELECT 1
+      FROM public.applications a
+      JOIN public.jobs j ON j.id = a.job_id
+      JOIN public.companies c ON c.id = j.company_id
+      WHERE a.candidato_id = profiles.id
+        AND c.owner_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "profiles_insert_own"
+  ON public.profiles FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "profiles_update_own"
+  ON public.profiles FOR UPDATE TO authenticated
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 -- ============================================================
 -- FIN DE LA MIGRACIÓN INICIAL
 -- ============================================================
