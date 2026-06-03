@@ -17,6 +17,7 @@
 ## 🛠️ Stack tecnológico
 
 ### Frontend
+
 - **React 19** + **Vite 8** + **TypeScript 6**
 - **Tailwind CSS v4** (con `@theme` en CSS, NO `tailwind.config.js`)
 - **shadcn/ui** (componentes copiados a `src/shared/ui/`)
@@ -25,13 +26,16 @@
 - **React Hook Form v7** + **Zod v4** + **@hookform/resolvers**
 
 ### Backend
+
 - **Supabase** (Auth + PostgreSQL + Storage + Row Level Security)
 - **PostGIS** (extensión de PostgreSQL para queries geográficas)
 
 ### Mapas
+
 - **Leaflet** + **React-Leaflet** + **OpenStreetMap** (gratis, sin tarjeta de crédito)
 
 ### Infraestructura
+
 - **GitHub** (control de versiones)
 - **Vercel** (despliegue del frontend)
 - **Cloudflare** (DNS + WAF + protección DDoS)
@@ -65,6 +69,7 @@ src/
 ```
 
 **Cada feature interna sigue la misma estructura:**
+
 ```
 features/<nombre>/
 ├── components/   # componentes específicos de la feature
@@ -85,12 +90,14 @@ features/<nombre>/
 - `meyah-tinta-600/900` — Marrón oscuro (textos)
 
 **Mapeo a tokens semánticos de shadcn (en `globals.css`):**
+
 - `primary` → meyah-jade
 - `background` → meyah-crema
 - `accent` → meyah-terracota
 - `foreground` → meyah-tinta
 
 **Tipografía** (auto-hospedada vía `@fontsource`, sin Google CDN):
+
 - `font-display` → **Fraunces** (títulos h1–h6) — pesos 400, 500, 600, 700
 - `font-sans` → **Inter** (cuerpo, default de body) — pesos 400, 500
 - Los `<h1>`–`<h6>` toman Fraunces por default vía CSS base en `globals.css`.
@@ -99,31 +106,37 @@ features/<nombre>/
 ## ⚙️ Convenciones de código
 
 ### Idioma
+
 - **Código (variables, funciones, archivos):** inglés
 - **CLAUDE.md y comentarios largos:** español
 - **Commits:** Conventional Commits en inglés (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `style:`, `test:`)
 
 ### TypeScript
+
 - **Strict mode habilitado.** Nada de `any` salvo en casos excepcionales con comentario justificando.
 - Tipos de Supabase generados automáticamente desde la BD (a configurar en Etapa 2).
 - Schemas de Zod definen también los tipos: `type LoginForm = z.infer<typeof loginSchema>`.
 
 ### Imports
+
 - **Siempre usar el alias `@/`** que apunta a `src/`.
 - Orden de imports: librerías externas → alias `@/` → relativos `./`.
 
 ### Componentes React
+
 - **Functional components con TypeScript.** Nada de clases.
 - Un componente por archivo. Nombre del archivo = nombre del componente (PascalCase para componentes, kebab-case para utilidades).
 - Props tipadas con interface o type, exportadas si son útiles fuera.
 - Hooks personalizados van en `hooks/` con prefijo `use` (ej. `useAuth`, `useNearbyJobs`).
 
 ### Estilos
+
 - **Tailwind first.** Nada de CSS modules ni styled-components.
 - Cuando hay variantes complejas → usar `cva` (ya viene con shadcn).
 - Combinar clases con `cn()` de `@/shared/lib/utils`.
 
 ### Responsive (mobile-first)
+
 - Diseño SIEMPRE mobile-first: las clases base de Tailwind aplican a móvil; los prefijos `sm:`, `md:`, `lg:` AGREGAN estilos para pantallas más grandes.
 - Toda página y componente debe verse correctamente en móvil (320–414px de ancho) antes de considerarse terminado.
 - Verificar SIEMPRE en DevTools (modo responsive) antes de declarar un componente listo.
@@ -131,6 +144,7 @@ features/<nombre>/
 - Prioridad de uso real de Meyah: ~75% móvil, ~25% desktop. El móvil NO es secundario.
 
 ### Datos + iteración vs JSX repetido
+
 - Si hay 3+ elementos similares (misma estructura, distinta data) → preferir array de datos + `.map()` para iterar.
 - Si los elementos tienen estructuras o propósitos distintos → mantener JSX separado, NO forzar iteración.
 - Si hay solo 2 elementos similares → criterio: iterar si la lógica lo amerita, mantener separado si la legibilidad gana.
@@ -139,11 +153,13 @@ features/<nombre>/
 - NUNCA aplicar iteración para "verse limpio" si el resultado es más difícil de leer.
 
 ### Estado y datos
+
 - **Estado local:** `useState` o `useReducer`.
 - **Estado del servidor:** TanStack Query, NO `useState` + `useEffect`.
 - **Estado global compartido:** Context API si es indispensable. Evitar Redux/Zustand en MVP.
 
 ### Formularios
+
 - **SIEMPRE** React Hook Form + Zod.
 - Schema de validación en `features/<nombre>/schemas/`.
 
@@ -161,12 +177,14 @@ features/<nombre>/
 ## 📐 Decisiones de arquitectura
 
 ### Lo que SÍ está en el MVP
+
 - Registro/login (empleadores y candidatos) con verificación de email
 - Empleadores: registrar empresa, publicar vacantes con ubicación geográfica
 - Candidatos: ver mapa con vacantes cerca, postularse
 - Empleadores: ver postulaciones recibidas
 
 ### Lo que NO está en el MVP (postergado intencionalmente)
+
 - Chat / mensajería interna
 - Subir CV en PDF
 - Sistema de calificaciones / reseñas
@@ -175,6 +193,7 @@ features/<nombre>/
 - Pagos / monetización (vacantes destacadas se preparan en BD pero no se activan)
 
 ### Campos future-proof en la BD
+
 Algunas tablas tienen campos como `is_featured`, `views_count`, `is_verified`, `expires_at` que no se usan en MVP pero están listos para v2/v3 sin migrar datos.
 
 ## 🤖 Cómo trabajar con Claude Code en este proyecto
@@ -189,8 +208,10 @@ Algunas tablas tienen campos como `is_featured`, `views_count`, `is_verified`, `
 6. **No tocar configuración existente** (`tsconfig`, `vite.config`, `components.json`, `globals.css`) sin justificación.
 7. **Usar TypeScript estricto.** Sin `any` sin comentario.
 8. **No agregar features fuera del scope del MVP** (ver lista arriba).
+9. **No incluir línea Co-Authored-By ni atribución de Claude en los mensajes de commit.**
 
 ### Estilo de respuestas preferido
+
 - Conciso, sin relleno.
 - Si haces algo que no pedí, marcarlo explícitamente como "agregué X porque Y".
 - Mostrar siempre el contenido final de archivos modificados, no solo diffs.

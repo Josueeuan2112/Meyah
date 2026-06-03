@@ -1,7 +1,8 @@
-// PÁGINA TEMPORAL — será reemplazada por el dashboard real en etapas futuras.
-// Sirve únicamente para verificar que el flujo de registro/login funciona end-to-end.
+// Distribuidor post-login:
+//   - Empleador → redirige a /dashboard (su área de trabajo)
+//   - Candidato → muestra tarjeta de bienvenida (placeholder hasta Etapa 6)
 
-import { useNavigate } from 'react-router'
+import { Navigate, useNavigate } from 'react-router'
 import { Loader2, LogOut } from 'lucide-react'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -48,6 +49,12 @@ export default function WelcomePage() {
     )
   }
 
+  // Empleador → dashboard. replace evita que /inicio quede en el historial
+  // y cause un loop con el botón atrás del navegador.
+  if (profile.tipo === 'empleador') {
+    return <Navigate to="/dashboard" replace />
+  }
+
   return (
     <main className="min-h-screen bg-meyah-crema-50 flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md border-meyah-crema-100 shadow-md text-center">
@@ -62,10 +69,7 @@ export default function WelcomePage() {
 
         <CardContent>
           <p className="text-sm text-meyah-tinta-600">
-            Tu cuenta está lista. Pronto podrás{' '}
-            {profile.tipo === 'candidato'
-              ? 'explorar vacantes cerca de ti en el mapa.'
-              : 'publicar vacantes y recibir postulaciones.'}
+            Tu cuenta está lista. Pronto podrás explorar vacantes cerca de ti en el mapa.
           </p>
         </CardContent>
 

@@ -70,7 +70,7 @@ export default function RegisterPage() {
         <div className="bg-meyah-crema-100 border border-meyah-tinta-600/15 rounded-xl p-6 md:p-8 shadow-sm">
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
 
-            {/* ── Selector de tipo ─────────────────────────────────── */}
+            {/*  Selector de tipo  */}
             <div>
               <Label className="text-sm font-semibold text-meyah-tinta-900 mb-3 block">
                 ¿Qué buscas?
@@ -139,7 +139,7 @@ export default function RegisterPage() {
               )}
             </div>
 
-            {/* ── Campos del formulario ────────────────────────────── */}
+            {/*  Campos del formulario  */}
             <div className="mt-5 space-y-4">
 
               {/* Nombre */}
@@ -218,7 +218,7 @@ export default function RegisterPage() {
 
             </div>
 
-            {/* ── Submit ───────────────────────────────────────────── */}
+            {/*  Submit  */}
             <Button
               type="submit"
               size="lg"
@@ -237,7 +237,7 @@ export default function RegisterPage() {
 
           </form>
 
-          {/* ── Link al login ─────────────────────────────────────── */}
+          {/* ── Link al login ──── */}
           <p className="mt-5 text-center text-sm text-meyah-tinta-600">
             ¿Ya tienes cuenta?{' '}
             <Link

@@ -7,6 +7,9 @@ import RegisterPage from '@/features/auth/pages/RegisterPage'
 import LoginPage from '@/features/auth/pages/LoginPage'
 import WelcomePage from '@/features/auth/pages/WelcomePage'
 import CompanyPage from '@/features/companies/pages/CompanyPage'
+import DashboardPage from '@/features/jobs/pages/DashboardPage'
+import NewJobPage from '@/features/jobs/pages/NewJobPage'
+import EditJobPage from '@/features/jobs/pages/EditJobPage'
 
 export const router = createBrowserRouter([
   {
@@ -36,6 +39,18 @@ export const router = createBrowserRouter([
           {
             path: '/mi-empresa',
             element: <CompanyPage />,
+          },
+          {
+            path: '/dashboard',
+            element: <DashboardPage />,
+          },
+          {
+            path: '/dashboard/nueva-vacante',
+            element: <NewJobPage />,
+          },
+          {
+            path: '/dashboard/vacante/:id/editar',
+            element: <EditJobPage />,
           },
         ],
       },

@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useNavigate } from 'react-router'
 
 import { useMyCompany } from '@/features/companies/hooks/useMyCompany'
 import { useCreateCompany } from '@/features/companies/hooks/useCreateCompany'
@@ -15,6 +16,7 @@ import {
 } from '@/shared/ui/card'
 
 export default function CompanyPage() {
+  const navigate = useNavigate()
   const { data: company, isLoading, isError } = useMyCompany()
   const createMutation = useCreateCompany()
   const updateMutation = useUpdateCompany()
@@ -53,10 +55,8 @@ export default function CompanyPage() {
         }
       )
     } else {
-      // Tras crear, useCreateCompany invalida ['company','mine',userId] y
-      // useMyCompany refetchea solo → esta página se auto-actualiza en modo edición.
       createMutation.mutate(values, {
-        onSuccess: () => toast.success('Empresa creada'),
+        onSuccess: () => { toast.success('Empresa creada'); void navigate('/dashboard') },
         onError:   () => toast.error('No se pudo crear la empresa'),
       })
     }
