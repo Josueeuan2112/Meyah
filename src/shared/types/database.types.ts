@@ -437,6 +437,14 @@ export type Database = {
             }
             Returns: string
           }
+      current_user_applied_to_job: {
+        Args: { p_job_id: string }
+        Returns: boolean
+      }
+      current_user_can_view_applicant: {
+        Args: { p_profile_id: string }
+        Returns: boolean
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -569,6 +577,18 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
+      jobs_near: {
+        Args: { p_lat?: number; p_lng?: number }
+        Returns: {
+          categoria: string
+          company_nombre: string
+          distancia_m: number
+          id: string
+          salario_max: number
+          salario_min: number
+          titulo: string
+        }[]
+      }
       longtransactionsenabled: { Args: never; Returns: boolean }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
