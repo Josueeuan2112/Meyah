@@ -216,6 +216,12 @@ Algunas tablas tienen campos como `is_featured`, `views_count`, `is_verified`, `
 - Si haces algo que no pedí, marcarlo explícitamente como "agregué X porque Y".
 - Mostrar siempre el contenido final de archivos modificados, no solo diffs.
 
+## Verificación de tipos
+
+- Comando oficial: `npx tsc --noEmit -p tsconfig.app.json`
+- NO usar `npx tsc --noEmit` a secas: el `tsconfig.json` raíz es solution-style (`files: []` + `references`), y `tsc` sin `--build` no sigue las referencias, así que revisa CERO archivos y siempre reporta limpio (falso negativo).
+- `baseUrl` fue eliminado de `tsconfig.app.json` (deprecado en TS 6, se elimina en TS 7). El alias `@/*` resuelve por `paths` relativo (`./src/*`) gracias a `moduleResolution: "bundler"`, sin `baseUrl`.
+
 ## 📊 Roadmap general
 
 - **v1 (MVP):** lo descrito en este documento. 6-12 semanas estimadas.
