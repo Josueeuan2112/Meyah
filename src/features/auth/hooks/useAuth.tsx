@@ -1,11 +1,11 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 
 import { supabase } from '@/shared/lib/supabase'
 import type { Profile, UserType } from '@/shared/types'
 
-// ─── Tipos ────────────────────────────────────────────────────────────────────
+// Tipos
 
 interface SignUpParams {
   email: string
@@ -22,13 +22,14 @@ interface AuthContextValue {
   signUp: (params: SignUpParams) => Promise<{ error: Error | null }>
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
+  reloadProfile: () => Promise<void>
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────────
+//ontext 
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
+//Provider 
 
 interface AuthProviderProps {
   children: ReactNode
@@ -88,6 +89,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => subscription.unsubscribe()
   }, [])
 
+  const reloadProfile = useCallback(async () => {
+    if (!user) return
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+    setProfile(data)
+  }, [user])
+
   async function signUp({
     email,
     password,
@@ -121,14 +132,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ session, user, profile, loading, signUp, signIn, signOut }}
+      value={{ session, user, profile, loading, signUp, signIn, signOut, reloadProfile }}
     >
       {children}
     </AuthContext.Provider>
   )
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+//  Hook 
 
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext)
