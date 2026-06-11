@@ -44,24 +44,20 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="px-4 py-10 md:py-16">
-      <div className="max-w-2xl mx-auto">
-
-        <div className="mb-8">
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-meyah-terracota-700">
-            TU CUENTA
-          </span>
-          <h1 className="font-display text-3xl md:text-4xl text-meyah-jade-900 mt-3">
-            Mi perfil
-          </h1>
-        </div>
+    <div className="mx-auto max-w-295 px-4 pt-12 pb-22.5 sm:px-6">
+      <div style={{ animation: 'rise .5s cubic-bezier(.2,.7,.3,1) forwards' }}>
+        <span className="eyebrow">Tu cuenta</span>
+        <h1 className="mt-2.5 text-[clamp(30px,4vw,40px)]">Mi perfil</h1>
+        <p className="mt-3 text-[15.5px] text-meyah-tinta-600">
+          Tu ubicación de referencia define qué vacantes ves primero.
+        </p>
 
         <ProfileForm
           defaultValues={defaults}
           onSubmit={onSubmit}
           isSubmitting={updateProfile.isPending}
+          roleLabel={profile.tipo === 'empleador' ? 'Empleador' : 'Candidato'}
         />
-
       </div>
     </div>
   )

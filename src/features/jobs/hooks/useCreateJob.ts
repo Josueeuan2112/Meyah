@@ -26,6 +26,7 @@ export function useCreateJob() {
           titulo:      values.titulo,
           descripcion: values.descripcion,
           categoria:   values.categoria,
+          jornada:     values.jornada,
           salario_min: values.salario_min,
           salario_max: values.salario_max,
           lat:         values.lat,

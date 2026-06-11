@@ -10,9 +10,8 @@ export const profileSchema = z
     phone: z
       .string()
       .trim()
-      .max(20, 'Máximo 20 caracteres')
-      .optional()
-      .transform(v => (v && v.length > 0 ? v : null)),
+      .min(10, 'Ingresa un teléfono de 10 dígitos.')
+      .max(20, 'Máximo 20 caracteres'),
     lat_referencia: z.number().min(-90).max(90).nullable(),
     lng_referencia: z.number().min(-180).max(180).nullable(),
     is_searchable: z.boolean(),

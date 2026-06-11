@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router'
-import { Briefcase, Building2, Compass, FileText, User } from 'lucide-react'
+import { Briefcase, Building2, Compass, FileText, LogOut, User } from 'lucide-react'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
@@ -31,42 +31,59 @@ export default function AppLayout() {
     <div className="flex min-h-dvh flex-col bg-meyah-crema-50 text-meyah-tinta-900">
 
       {/* ── Desktop navbar (hidden on mobile) ── */}
-      <header className="hidden md:flex sticky top-0 z-30 items-center px-6 h-14 bg-meyah-crema-100 border-b border-meyah-tinta-600/10">
+      <header className="hidden md:block sticky top-0 z-50 bg-meyah-crema-50/80 backdrop-blur-md border-b border-meyah-border-soft">
+        <div className="mx-auto flex h-20 w-full max-w-375 items-center gap-5.5 px-5.5">
 
-        {/* Wordmark */}
-        <Link
-          to={items[0]?.to ?? '/inicio'}
-          className="font-display text-xl font-semibold text-meyah-jade-700 mr-8 select-none"
-        >
-          Meyah
-        </Link>
+          {/* Wordmark + punto terracota */}
+          <Link
+            to={items[0]?.to ?? '/inicio'}
+            className="flex items-baseline gap-0.75 font-display text-[23px] font-semibold tracking-[-0.02em] text-meyah-jade-700 select-none"
+          >
+            Meyah
+            
+          </Link>
 
-        {/* Nav items */}
-        <nav className="flex items-center gap-6 flex-1">
-          {items.map(({ to, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                isActive
-                  ? 'text-sm font-semibold text-meyah-jade-700'
-                  : 'text-sm text-meyah-tinta-600 hover:text-meyah-tinta-900 transition-colors'
-              }
+          {/* Nav items */}
+          <nav className="flex items-baseline gap-1">
+            {items.map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  isActive
+                    ? 'px-3.5 py-2 rounded-full text-[17px] font-semibold text-meyah-jade-700 bg-meyah-jade-50'
+                    : 'px-3.5 py-2 rounded-full text-[17px] font-medium text-meyah-tinta-600 transition-colors hover:text-meyah-jade-900 hover:bg-meyah-crema-100'
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* Logout icon + avatar */}
+          <div className="ml-auto flex items-center gap-1">
+
+            {/* Botón logout (ícono) */}
+            <button
+              type="button"
+              onClick={handleSignOut}
+              aria-label="Cerrar sesión"
+              className="grid h-9 w-9 place-items-center rounded-full text-meyah-tinta-400 transition-colors hover:text-meyah-jade-900 hover:bg-meyah-crema-100"
             >
-              {label}
-            </NavLink>
-          ))}
-        </nav>
+              <LogOut size={18} aria-hidden="true" />
+            </button>
 
-        {/* Logout */}
-        <button
-          type="button"
-          onClick={handleSignOut}
-          className="text-sm text-meyah-tinta-600 hover:text-meyah-tinta-900 transition-colors"
-        >
-          Cerrar sesión
-        </button>
+            {/* Avatar */}
+            <div className="grid h-10 w-10 place-items-center rounded-full border border-meyah-border bg-white text-sm font-semibold text-meyah-jade-700 transition-colors hover:border-meyah-jade-500 select-none">
+              {profile?.nombre
+                ? profile.nombre.charAt(0).toUpperCase()
+                : <User size={18} aria-hidden="true" />
+              }
+            </div>
 
+          </div>
+
+        </div>
       </header>
 
       {/* ── Main content ── */}
@@ -76,14 +93,14 @@ export default function AppLayout() {
       </main>
 
       {/* ── Mobile tab bar (hidden on desktop) ── */}
-      <nav className="md:hidden fixed inset-x-0 bottom-0 z-30 bg-meyah-crema-100 border-t border-meyah-tinta-600/10 flex">
+      <nav className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-meyah-crema-50/90 backdrop-blur border-t border-meyah-border-soft flex">
         {items.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
               `flex flex-col items-center gap-0.5 py-2 flex-1 transition-colors ${
-                isActive ? 'text-meyah-jade-700' : 'text-meyah-tinta-600/70'
+                isActive ? 'text-meyah-jade-700' : 'text-meyah-tinta-400'
               }`
             }
           >

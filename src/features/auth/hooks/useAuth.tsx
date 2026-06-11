@@ -12,6 +12,9 @@ interface SignUpParams {
   password: string
   nombre: string
   tipo: UserType
+  phone: string
+  lat_referencia?: number | null
+  lng_referencia?: number | null
 }
 
 interface AuthContextValue {
@@ -104,14 +107,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     password,
     nombre,
     tipo,
+    phone,
+    lat_referencia,
+    lng_referencia,
   }: SignUpParams): Promise<{ error: Error | null }> {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         // El trigger handle_new_user en Supabase lee raw_user_meta_data
-        // para crear el registro inicial en profiles con nombre y tipo correctos
-        data: { nombre, tipo },
+        // para crear el registro inicial en profiles con nombre, tipo,
+        // phone y ubicación de referencia (candidatos)
+        data: { nombre, tipo, phone, lat_referencia, lng_referencia },
       },
     })
     return { error }

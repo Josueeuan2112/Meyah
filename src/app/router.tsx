@@ -14,6 +14,7 @@ import EditJobPage from '@/features/jobs/pages/EditJobPage'
 import ProfilePage from '@/features/profile/pages/ProfilePage'
 import JobDetailPage from '@/features/jobs/pages/JobDetailPage'
 import MyApplicationsPage from '@/features/applications/pages/MyApplicationsPage'
+import JobApplicantsPage from '@/features/applications/pages/JobApplicantsPage'
 
 export const router = createBrowserRouter([
   // ── Bloque A: rutas públicas con Header/Footer ──────────────────────────
@@ -41,6 +42,7 @@ export const router = createBrowserRouter([
           { path: '/dashboard',                      element: <DashboardPage />      },
           { path: '/dashboard/nueva-vacante',        element: <NewJobPage />         },
           { path: '/dashboard/vacante/:id/editar',   element: <EditJobPage />        },
+          { path: '/dashboard/vacante/:id/postulantes', element: <JobApplicantsPage /> },
         ],
       },
     ],

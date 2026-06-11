@@ -22,7 +22,28 @@
 
   /* Tipografías */
   --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Fraunces', Georgia, serif;
+  --font-display: 'Fraunces Variable', Georgia, serif;
+
+  /* Tonos faltantes del diseño */
+  --color-meyah-jade-100: #D2EBE7;
+  --color-meyah-jade-600: #17897C;
+  --color-meyah-terracota-100: #F8DDD4;
+  --color-meyah-crema-200: #E9E2D5;
+  --color-meyah-tinta-400: #8B867E;
+  --color-meyah-border: #E5DED2;
+  --color-meyah-border-soft: #EFE9DE;
+
+  /* Radios del diseño */
+  --radius-card: 18px;
+  --radius-panel: 26px;
+  --radius-field: 12px;
+
+  /* Sombras difusas (sobrescriben las default a propósito) */
+  --shadow-xs: 0 1px 2px rgba(45,42,38,0.04);
+  --shadow-sm: 0 2px 8px rgba(45,42,38,0.05), 0 1px 2px rgba(45,42,38,0.04);
+  --shadow-md: 0 8px 28px -8px rgba(45,42,38,0.12), 0 2px 6px rgba(45,42,38,0.05);
+  --shadow-lg: 0 24px 60px -18px rgba(45,42,38,0.20), 0 6px 16px rgba(45,42,38,0.06);
+  --shadow-pin: 0 4px 10px -2px rgba(10,61,56,0.35);
 }
 
 /* Tokens semánticos de shadcn → mapeados a paleta Meyah */
@@ -71,4 +92,69 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.04;
+  color: var(--color-meyah-jade-900);
+  text-wrap: balance;
+  font-optical-sizing: auto;
+}
+
+p { text-wrap: pretty; }
+
+::selection { background: var(--color-meyah-jade-100); color: var(--color-meyah-jade-900); }
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--color-meyah-terracota-500);
+}
+
+/* ── Keyframes ─────────────────────────────────────────────────────────────── */
+
+@keyframes rise { from { transform: translateY(14px); } to { transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pinDrop {
+  0% { transform: translate(-50%,-128%) scale(.7); }
+  60% { transform: translate(-50%,-92%) scale(1.04); }
+  100% { transform: translate(-50%,-100%) scale(1); }
+}
+@keyframes pulse {
+  0% { transform: translate(-50%,-50%) scale(.6); opacity: .5; }
+  100% { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
+}
+@keyframes sheetIn { from { transform: translateX(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+
+/* ── Utilidades ────────────────────────────────────────────────────────────── */
+
+.reveal { animation: rise .6s cubic-bezier(.2,.7,.3,1) forwards; }
+
+.greca {
+  background-image: repeating-linear-gradient(135deg,
+    color-mix(in srgb, var(--color-meyah-jade-700) 9%, transparent) 0 2px,
+    transparent 2px 9px);
+}
+
+.scroll-fade { scrollbar-width: thin; scrollbar-color: var(--color-meyah-border) transparent; }
+.scroll-fade::-webkit-scrollbar { width: 8px; }
+.scroll-fade::-webkit-scrollbar-thumb { background: var(--color-meyah-border); border-radius: 99px; }
+.scroll-fade::-webkit-scrollbar-track { background: transparent; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--color-meyah-crema-100);
+  color: var(--color-meyah-tinta-600);
+  border: 1px solid transparent;
+  transition: all .16s; cursor: pointer; white-space: nowrap;
+}
+.chip:hover { border-color: var(--color-meyah-border); background: #fff; }
+.chip[data-active="true"] { background: var(--color-meyah-jade-900); color: #fff; border-color: var(--color-meyah-jade-900); }
+
+/* ── Reduced motion ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
 }

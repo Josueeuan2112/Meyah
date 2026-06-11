@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { JOB_CATEGORY_VALUES } from '@/features/jobs/schemas/categories'
+import { JOB_CATEGORY_VALUES, JOB_SCHEDULE_VALUES } from '@/features/jobs/schemas/categories'
 
 export const jobSchema = z
   .object({
@@ -18,6 +18,8 @@ export const jobSchema = z
 
     // { error } en lugar de { message } — API de Zod v4 para enum
     categoria: z.enum(JOB_CATEGORY_VALUES, { error: 'Selecciona una categoría.' }),
+
+    jornada: z.enum(JOB_SCHEDULE_VALUES, { error: 'Selecciona un tipo de jornada.' }).default('tiempo_completo'),
 
     // z.coerce.number() convierte el string del input HTML a number antes de validar
     salario_min: z.coerce

@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { MapPin } from 'lucide-react'
 
 import LocationPicker from '@/features/jobs/components/LocationPicker'
 import { profileSchema } from '@/features/profile/schemas/profile.schema'
@@ -14,9 +15,10 @@ interface ProfileFormProps {
   defaultValues: ProfileSchemaInput
   onSubmit: (values: ProfileSchemaOutput) => void | Promise<void>
   isSubmitting: boolean
+  roleLabel?: string
 }
 
-export default function ProfileForm({ defaultValues, onSubmit, isSubmitting }: ProfileFormProps) {
+export default function ProfileForm({ defaultValues, onSubmit, isSubmitting, roleLabel }: ProfileFormProps) {
   const {
     register,
     handleSubmit,
@@ -28,110 +30,116 @@ export default function ProfileForm({ defaultValues, onSubmit, isSubmitting }: P
     defaultValues,
   })
 
+  const nombre = watch('nombre')
   const lat = watch('lat_referencia')
   const lng = watch('lng_referencia')
+  const tieneUbicacion = lat !== null && lng !== null
+
+  const nombreTrim = nombre.trim()
+  const iniciales = nombreTrim
+    ? nombreTrim.split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase()
+    : '?'
+
+  const agregarUbicacion = () => {
+    setValue('lat_referencia', MERIDA_CENTER[0], { shouldValidate: true })
+    setValue('lng_referencia', MERIDA_CENTER[1], { shouldValidate: true })
+  }
+
+  const quitarUbicacion = () => {
+    setValue('lat_referencia', null, { shouldValidate: true })
+    setValue('lng_referencia', null, { shouldValidate: true })
+  }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <div className="mt-8.5 grid items-start gap-5 md:grid-cols-2">
 
-      {/* nombre */}
-      <div>
-        <Label htmlFor="nombre" className="text-sm font-medium text-meyah-tinta-900">
-          Nombre completo
-        </Label>
-        <Input
-          id="nombre"
-          type="text"
-          className="mt-1"
-          aria-invalid={!!errors.nombre}
-          {...register('nombre')}
-        />
-        {errors.nombre && (
-          <p className="text-xs text-meyah-terracota-700 mt-1">{errors.nombre.message}</p>
-        )}
-      </div>
-
-      {/* phone */}
-      <div>
-        <Label htmlFor="phone" className="text-sm font-medium text-meyah-tinta-900">
-          Teléfono (opcional)
-        </Label>
-        <Input
-          id="phone"
-          type="tel"
-          className="mt-1"
-          aria-invalid={!!errors.phone}
-          {...register('phone')}
-        />
-        {errors.phone && (
-          <p className="text-xs text-meyah-terracota-700 mt-1">{errors.phone.message}</p>
-        )}
-      </div>
-
-      {/* ubicación de referencia */}
-      <div>
-        <p className="text-sm font-medium text-meyah-tinta-900 mb-3">
-          Ubicación de referencia
-        </p>
-        {lat !== null && lng !== null ? (
-          <div className="space-y-3">
-            <LocationPicker
-              lat={lat}
-              lng={lng}
-              onChange={(la, ln) => {
-                setValue('lat_referencia', la, { shouldValidate: true })
-                setValue('lng_referencia', ln, { shouldValidate: true })
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => {
-                setValue('lat_referencia', null, { shouldValidate: true })
-                setValue('lng_referencia', null, { shouldValidate: true })
-              }}
-              className="text-sm text-meyah-terracota-700 hover:underline"
-            >
-              Quitar ubicación
-            </button>
+        {/* Tarjeta izquierda: datos */}
+        <div className="rounded-panel border border-meyah-border-soft bg-white p-7 shadow-sm">
+          <div className="mb-6 flex items-center gap-3.75">
+            <div className="grid h-14 w-14 flex-none place-items-center rounded-full bg-meyah-jade-500 font-display text-[20px] font-semibold text-white">
+              {iniciales}
+            </div>
+            <div className="min-w-0">
+              <h3 className="truncate text-[20px]">{nombre || 'Tu nombre'}</h3>
+              {roleLabel && <p className="mt-0.5 text-[13.5px] text-meyah-tinta-600">{roleLabel}</p>}
+            </div>
           </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setValue('lat_referencia', MERIDA_CENTER[0], { shouldValidate: true })
-              setValue('lng_referencia', MERIDA_CENTER[1], { shouldValidate: true })
-            }}
-            className="text-sm text-meyah-jade-700 border border-meyah-jade-500/30 rounded-lg px-4 py-2 hover:bg-meyah-jade-50 transition-colors"
-          >
-            Agregar mi ubicación de referencia
-          </button>
-        )}
-        {errors.lat_referencia && (
-          <p className="text-xs text-meyah-terracota-700 mt-2">{errors.lat_referencia.message}</p>
-        )}
+
+          <div className="mb-6 flex flex-col gap-4">
+            {/* Nombre */}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="nombre" className="text-[13.5px] font-semibold text-meyah-tinta-900">Nombre completo</Label>
+              <Input id="nombre" {...register('nombre')} aria-invalid={!!errors.nombre} />
+              {errors.nombre && <p className="text-[12.5px] text-meyah-terracota-700">{errors.nombre.message}</p>}
+            </div>
+            {/* Teléfono (opcional) */}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="phone" className="text-[13.5px] font-semibold text-meyah-tinta-900">
+                Teléfono
+              </Label>
+              <Input id="phone" type="tel" inputMode="tel" placeholder="999 000 0000" {...register('phone')} aria-invalid={!!errors.phone} />
+              {errors.phone && <p className="text-[12.5px] text-meyah-terracota-700">{errors.phone.message}</p>}
+            </div>
+            {/* Aparecer en búsquedas (is_searchable) — solo candidato */}
+            {roleLabel === 'Candidato' && (
+              <label className="flex cursor-pointer items-center gap-2.5">
+                <input type="checkbox" {...register('is_searchable')} className="h-4.5 w-4.5 flex-none accent-meyah-jade-500" />
+                <span className="text-[13.5px] text-meyah-tinta-600">Quiero aparecer en búsquedas de empleadores cercanos</span>
+              </label>
+            )}
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Guardando…' : 'Guardar cambios'}
+          </Button>
+        </div>
+
+        {/* Tarjeta derecha: mapa */}
+        <div className="rounded-panel border border-meyah-border-soft bg-white p-5.5 shadow-sm md:sticky md:top-24">
+          <span className="eyebrow">Ubicación de referencia</span>
+          <h4 className="mt-1 font-display text-[22px] text-meyah-jade-900">
+            {tieneUbicacion ? 'Tu zona en Mérida' : 'Sin ubicación'}
+          </h4>
+
+          {lat !== null && lng !== null ? (
+            <>
+              <div className="my-4 h-70 overflow-hidden rounded-card border border-meyah-border-soft">
+                <LocationPicker
+                  lat={lat}
+                  lng={lng}
+                  onChange={(la, ln) => {
+                    setValue('lat_referencia', la, { shouldDirty: true })
+                    setValue('lng_referencia', ln, { shouldDirty: true })
+                  }}
+                />
+              </div>
+              <p className="flex items-center gap-1.5 text-[13px] text-meyah-tinta-400">
+                <MapPin size={14} className="text-meyah-jade-600" /> Arrastra el punto para cambiar tu zona.
+              </p>
+              <Button type="button" variant="ghost" size="sm" onClick={quitarUbicacion}>
+                Quitar ubicación
+              </Button>
+            </>
+          ) : (
+            <div className="my-4 grid h-70 place-items-center rounded-card border border-dashed border-meyah-border bg-meyah-crema-50 text-center">
+              <div className="flex flex-col items-center gap-3 px-6">
+                <div className="grid h-12 w-12 place-items-center rounded-[14px] bg-meyah-crema-100 text-meyah-tinta-400">
+                  <MapPin size={22} />
+                </div>
+                <p className="text-[13.5px] text-meyah-tinta-600">
+                  Agrega tu ubicación para ordenar las vacantes por cercanía
+                </p>
+                <Button type="button" onClick={agregarUbicacion}>Agregar ubicación</Button>
+              </div>
+            </div>
+          )}
+
+          {errors.lat_referencia && (
+            <p className="mt-2 text-[12.5px] text-meyah-terracota-700">{errors.lat_referencia.message}</p>
+          )}
+        </div>
       </div>
-
-      {/* is_searchable */}
-      <div className="flex items-center gap-3">
-        <input
-          id="is_searchable"
-          type="checkbox"
-          className="h-4 w-4 rounded accent-meyah-jade-500"
-          {...register('is_searchable')}
-        />
-        <Label htmlFor="is_searchable" className="text-sm text-meyah-tinta-900 cursor-pointer">
-          Quiero aparecer en búsquedas de empleadores
-        </Label>
-      </div>
-
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full sm:w-auto bg-meyah-jade-500 hover:bg-meyah-jade-700 text-white"
-      >
-        {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
-      </Button>
-
     </form>
   )
 }

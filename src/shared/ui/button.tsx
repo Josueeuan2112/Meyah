@@ -5,36 +5,34 @@ import { Slot } from "radix-ui"
 import { cn } from "@/shared/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-semibold whitespace-nowrap outline-none transition-[transform,box-shadow,background-color,color] duration-200 ease-[cubic-bezier(.2,.7,.3,1)] focus-visible:ring-[3px] focus-visible:ring-meyah-jade-500/40 active:translate-y-px active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50 aria-invalid:ring-meyah-terracota-500/30 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default:
+          "bg-meyah-jade-500 text-white shadow-[0_6px_16px_-6px_rgba(27,153,139,0.5)] hover:bg-meyah-jade-700 hover:-translate-y-px hover:shadow-[0_10px_22px_-8px_rgba(27,153,139,0.55)]",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
+          "bg-meyah-terracota-50 text-meyah-terracota-700 hover:bg-meyah-terracota-500 hover:text-white",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border border-meyah-border bg-white text-meyah-tinta-900 shadow-xs hover:bg-meyah-crema-50 hover:border-meyah-tinta-400 hover:-translate-y-px",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-meyah-crema-100 text-meyah-tinta-900 hover:bg-meyah-crema-200",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-transparent text-meyah-tinta-600 hover:bg-meyah-crema-100 hover:text-meyah-jade-900",
+        link: "text-meyah-jade-700 underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        xs: "h-6 gap-1 rounded-md px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        icon: "size-9",
-        "icon-xs": "size-6 rounded-md [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-8",
-        "icon-lg": "size-10",
+        default: "px-[22px] py-[13px] text-[15px] has-[>svg]:px-[18px]",
+        xs: "gap-1 px-2.5 py-1 text-xs has-[>svg]:px-2 [&_svg:not([class*='size-'])]:size-3",
+        sm: "gap-1.5 px-[15px] py-[9px] text-[13.5px] has-[>svg]:px-3",
+        lg: "px-[26px] py-[15px] text-[16px] has-[>svg]:px-5",
+        icon: "size-11",
+        "icon-xs": "size-7 [&_svg:not([class*='size-'])]:size-3",
+        "icon-sm": "size-9",
+        "icon-lg": "size-12",
       },
     },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
+    defaultVariants: { variant: "default", size: "default" },
   }
 )
 

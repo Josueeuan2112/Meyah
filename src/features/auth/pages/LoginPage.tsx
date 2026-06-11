@@ -1,19 +1,28 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { ArrowRight, Mail } from 'lucide-react'
 
 import { loginSchema, type LoginFormData } from '@/features/auth/schemas/auth.schemas'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import AuthBackground from '@/shared/components/AuthBackground'
+
+function Wordmark({ className }: { className?: string }) {
+  return (
+    <div className={className}>
+      Meyah<span className="h-1.5 w-1.5 self-center rounded-full bg-meyah-terracota-500" />
+    </div>
+  )
+}
 
 export default function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
+  const [show, setShow] = useState(false)
 
   const {
     register,
@@ -37,96 +46,100 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-[calc(100vh-12rem)] flex items-center justify-center px-4 py-12">
-      <AuthBackground />
+    <div className="grid min-h-screen lg:grid-cols-2">
 
-      <div className="relative z-10 max-w-md mx-auto w-full">
+      {/* Panel izquierdo: marca (solo desktop) */}
+      <div className="greca relative hidden flex-col justify-between overflow-hidden bg-meyah-jade-900 p-12 text-white lg:flex">
+        <Wordmark className="flex items-baseline gap-0.75 font-display text-[26px] font-semibold text-white" />
 
-        {/* Header fuera del card */}
-        <div className="text-center mb-8">
-          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-meyah-terracota-700">
-            BIENVENIDO DE VUELTA
-          </span>
-          <h1 className="font-display text-3xl md:text-4xl text-meyah-jade-900 mt-3 leading-tight">
-            Inicia sesión
-          </h1>
-          <p className="text-base text-meyah-tinta-600 mt-3">
-            Acceso a tus vacantes y postulaciones.
+        <div>
+          <h2 className="font-display text-[clamp(34px,4vw,52px)] leading-[1.02] tracking-[-0.02em] text-white">
+            Trabajo<br />cerca de casa.
+          </h2>
+          <p className="mt-4 max-w-90 text-[15.5px] leading-[1.6] text-white/75">
+            Vuelve a tu mapa y descubre las vacantes nuevas que se publicaron en tu zona.
           </p>
+          <div className="mt-8 aspect-4/3 max-w-105 overflow-hidden rounded-panel border border-white/15 bg-white/6" />
         </div>
 
-        {/* Card del formulario */}
-        <div className="bg-meyah-crema-100 border border-meyah-tinta-600/15 rounded-xl p-6 md:p-8 shadow-sm">
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        <p className="text-[13px] text-white/55">Hecho en Mérida, Yucatán</p>
+      </div>
 
-            {/* ── Email ────────────────────────────────────────────── */}
-            <div>
-              <Label htmlFor="email" className="text-sm font-medium text-meyah-tinta-900">
+      {/* Panel derecho: formulario */}
+      <div className="flex items-center justify-center px-6 py-10 lg:px-12">
+        <div className="w-full max-w-[400px]">
+
+          {/* Wordmark jade (solo móvil, panel izquierdo oculto) */}
+          <div className="mb-8 lg:hidden">
+            <Wordmark className="flex items-baseline gap-0.75 font-display text-[24px] font-semibold text-meyah-jade-700" />
+          </div>
+
+          <span className="eyebrow">Te damos la bienvenida</span>
+          <h1 className="mt-1 text-[clamp(28px,4vw,36px)]">Inicia sesión</h1>
+          <p className="mt-2 text-[15px] text-meyah-tinta-600">
+            Entra para ver empleo cerca de ti en Mérida.
+          </p>
+
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-7 flex flex-col gap-4">
+
+            {/* Correo */}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="email" className="text-[13.5px] font-semibold text-meyah-tinta-900">
                 Correo electrónico
               </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="tucorreo@ejemplo.com"
-                aria-invalid={!!errors.email}
-                className="mt-1"
-                {...register('email')}
-              />
+              <div className="relative">
+                <Mail size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-meyah-tinta-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="tucorreo@ejemplo.com"
+                  aria-invalid={!!errors.email}
+                  className="pl-10"
+                  {...register('email')}
+                />
+              </div>
               {errors.email && (
-                <p className="text-xs text-meyah-terracota-700 mt-1">{errors.email.message}</p>
+                <p className="text-[12.5px] text-meyah-terracota-700">{errors.email.message}</p>
               )}
             </div>
 
-            {/* ── Password ─────────────────────────────────────────── */}
-            <div>
-              <Label htmlFor="password" className="text-sm font-medium text-meyah-tinta-900">
+            {/* Contraseña */}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="password" className="text-[13.5px] font-semibold text-meyah-tinta-900">
                 Contraseña
               </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Tu contraseña"
-                aria-invalid={!!errors.password}
-                className="mt-1"
-                {...register('password')}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={show ? 'text' : 'password'}
+                  placeholder="Tu contraseña"
+                  aria-invalid={!!errors.password}
+                  className="pr-20"
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShow(s => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium text-meyah-jade-700"
+                >
+                  {show ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
               {errors.password && (
-                <p className="text-xs text-meyah-terracota-700 mt-1">{errors.password.message}</p>
+                <p className="text-[12.5px] text-meyah-terracota-700">{errors.password.message}</p>
               )}
             </div>
 
-            {/* ── Submit ───────────────────────────────────────────── */}
-            <Button
-              type="submit"
-              size="lg"
-              disabled={isSubmitting}
-              className="mt-2 w-full bg-meyah-jade-500 hover:bg-meyah-jade-700 text-white hover:scale-[1.01] transition-all duration-200"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  Iniciando sesión...
-                </>
-              ) : (
-                'Iniciar sesión'
-              )}
+            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Entrando…' : 'Entrar'} <ArrowRight />
             </Button>
-
           </form>
 
-          {/* ── Link al registro ──────────────────────────────────── */}
-          <p className="mt-5 text-center text-sm text-meyah-tinta-600">
-            ¿No tienes cuenta?{' '}
-            <Link
-              to="/registro"
-              className="text-meyah-jade-700 hover:text-meyah-jade-900 font-medium transition-colors"
-            >
-              Regístrate
-            </Link>
+          <p className="mt-6 text-center text-[14px] text-meyah-tinta-600">
+            ¿No tienes cuenta? <Link to="/registro" className="font-semibold text-meyah-jade-700 hover:underline">Créala gratis</Link>
           </p>
-
         </div>
       </div>
-    </main>
+    </div>
   )
 }

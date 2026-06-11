@@ -54,7 +54,7 @@ export default function LocationPicker({ lat, lng, onChange }: LocationPickerPro
     <MapContainer
       center={[lat, lng]}
       zoom={14}
-      style={{ height: '300px', width: '100%', borderRadius: '0.5rem' }}
+      style={{ height: '100%', width: '100%' }}
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

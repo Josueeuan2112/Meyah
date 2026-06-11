@@ -11,6 +11,7 @@
     "gen:types": "supabase gen types --lang=typescript --linked --schema public > src/shared/types/database.types.ts"
   },
   "dependencies": {
+    "@fontsource-variable/fraunces": "^5.2.9",
     "@fontsource/fraunces": "^5.2.9",
     "@fontsource/inter": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",

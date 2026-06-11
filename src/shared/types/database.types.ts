@@ -123,7 +123,6 @@ export type Database = {
       }
       jobs: {
         Row: {
-          applications_count: number
           categoria: string
           company_id: string
           created_at: string
@@ -134,6 +133,7 @@ export type Database = {
           featured_until: string | null
           id: string
           is_featured: boolean
+          jornada: Database["public"]["Enums"]["job_schedule"]
           lat: number
           lng: number
           location: unknown
@@ -145,7 +145,6 @@ export type Database = {
           views_count: number
         }
         Insert: {
-          applications_count?: number
           categoria: string
           company_id: string
           created_at?: string
@@ -156,6 +155,7 @@ export type Database = {
           featured_until?: string | null
           id?: string
           is_featured?: boolean
+          jornada?: Database["public"]["Enums"]["job_schedule"]
           lat: number
           lng: number
           location?: unknown
@@ -167,7 +167,6 @@ export type Database = {
           views_count?: number
         }
         Update: {
-          applications_count?: number
           categoria?: string
           company_id?: string
           created_at?: string
@@ -178,6 +177,7 @@ export type Database = {
           featured_until?: string | null
           id?: string
           is_featured?: boolean
+          jornada?: Database["public"]["Enums"]["job_schedule"]
           lat?: number
           lng?: number
           location?: unknown
@@ -577,6 +577,20 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
+      increment_job_views: { Args: { p_job_id: string }; Returns: undefined }
+      job_applicants_near: {
+        Args: { p_job_id: string }
+        Returns: {
+          candidato_nombre: string
+          candidato_phone: string
+          created_at: string
+          distancia_m: number
+          estado: Database["public"]["Enums"]["application_status"]
+          id: string
+          mensaje: string
+          viewed_at: string
+        }[]
+      }
       jobs_near: {
         Args: { p_lat?: number; p_lng?: number }
         Returns: {
@@ -590,6 +604,13 @@ export type Database = {
         }[]
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      my_jobs_applicant_proximity: {
+        Args: { p_max_m?: number }
+        Returns: {
+          cercanos: number
+          job_id: string
+        }[]
+      }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
         | { Args: { use_typmod?: boolean }; Returns: string }
@@ -1225,6 +1246,7 @@ export type Database = {
     }
     Enums: {
       application_status: "pendiente" | "vista" | "rechazada" | "aceptada"
+      job_schedule: "tiempo_completo" | "medio_tiempo" | "turnos" | "comision"
       job_status: "abierta" | "cerrada"
       user_type: "empleador" | "candidato"
     }
@@ -1363,6 +1385,7 @@ export const Constants = {
   public: {
     Enums: {
       application_status: ["pendiente", "vista", "rechazada", "aceptada"],
+      job_schedule: ["tiempo_completo", "medio_tiempo", "turnos", "comision"],
       job_status: ["abierta", "cerrada"],
       user_type: ["empleador", "candidato"],
     },

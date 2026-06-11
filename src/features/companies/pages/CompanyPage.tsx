@@ -7,13 +7,6 @@ import { useCreateCompany } from '@/features/companies/hooks/useCreateCompany'
 import { useUpdateCompany } from '@/features/companies/hooks/useUpdateCompany'
 import CompanyForm from '@/features/companies/components/CompanyForm'
 import type { CompanyFormValues } from '@/features/companies/schemas/companySchema'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/shared/ui/card'
 
 export default function CompanyPage() {
   const navigate = useNavigate()
@@ -63,28 +56,19 @@ export default function CompanyPage() {
   }
 
   return (
-    <div className="px-4 py-10 md:py-16">
-      <div className="max-w-2xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">
-              {isEditing ? 'Editar empresa' : 'Crea tu empresa'}
-            </CardTitle>
-            <CardDescription>
-              {isEditing
-                ? 'Actualiza la información de tu empresa.'
-                : 'Registra los datos de tu empresa para empezar a publicar vacantes.'}
-            </CardDescription>
-          </CardHeader>
+    <div className="mx-auto max-w-230 px-4 pt-12 pb-22.5 sm:px-6.5">
+      <div style={{ animation: 'rise .5s cubic-bezier(.2,.7,.3,1) forwards' }}>
+        <span className="eyebrow">Tu empresa</span>
+        <h1 className="mt-2.5 text-[clamp(30px,4vw,40px)]">Perfil de empresa</h1>
+        <p className="mt-3 text-[15.5px] text-meyah-tinta-600">
+          Tu ubicación define a qué candidatos cercanos llegas.
+        </p>
 
-          <CardContent>
-            <CompanyForm
-              company={company ?? undefined}
-              onSubmit={onSubmit}
-              isSubmitting={isSubmitting}
-            />
-          </CardContent>
-        </Card>
+        <CompanyForm
+          company={company ?? undefined}
+          onSubmit={onSubmit}
+          isSubmitting={isSubmitting}
+        />
       </div>
     </div>
   )

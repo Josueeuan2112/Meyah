@@ -7,7 +7,6 @@ import { useUpdateJob } from '@/features/jobs/hooks/useUpdateJob'
 import JobForm from '@/features/jobs/components/JobForm'
 import type { JobFormValues } from '@/features/jobs/schemas/jobSchema'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 
 export default function EditJobPage() {
   // Todos los hooks antes de cualquier return condicional (regla de hooks)
@@ -59,18 +58,6 @@ export default function EditJobPage() {
     )
   }
 
-  //  Estado: resuelto 
-  return (
-    <div className="max-w-2xl mx-auto px-4 py-8 md:py-10">
-      <h1 className="text-2xl font-semibold mb-6">Editar vacante</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">{job.titulo}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <JobForm job={job} onSubmit={onSubmit} isSubmitting={updateMutation.isPending} />
-        </CardContent>
-      </Card>
-    </div>
-  )
+  //  Estado: resuelto
+  return <JobForm job={job} onSubmit={onSubmit} isSubmitting={updateMutation.isPending} />
 }
