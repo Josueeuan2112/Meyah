@@ -4,14 +4,17 @@ import { JOB_CATEGORIES, ICON_BY_CATEGORY } from '@/features/jobs/schemas/catego
 import type { JobCategoryValue } from '@/features/jobs/schemas/categories'
 import { formatDistance } from '@/shared/lib/formatDistance'
 import { formatSalary } from '@/shared/lib/formatSalary'
+import { cn } from '@/shared/lib/utils'
 import type { NearbyJob } from '@/features/jobs/hooks/useNearbyJobs'
 
 interface NearbyJobCardProps {
   job: NearbyJob
   onSelect: () => void
+  isActive?: boolean
+  onHoverChange?: (hovering: boolean) => void
 }
 
-export default function NearbyJobCard({ job, onSelect }: NearbyJobCardProps) {
+export default function NearbyJobCard({ job, onSelect, isActive, onHoverChange }: NearbyJobCardProps) {
   const label = JOB_CATEGORIES.find(c => c.value === job.categoria)?.label ?? job.categoria
   const Icon = ICON_BY_CATEGORY[job.categoria as JobCategoryValue] ?? ICON_BY_CATEGORY.otro
   const dist = formatDistance(job.distancia_m)
@@ -21,7 +24,12 @@ export default function NearbyJobCard({ job, onSelect }: NearbyJobCardProps) {
     <button
       type="button"
       onClick={onSelect}
-      className="group relative flex w-full gap-4 rounded-card border border-meyah-border-soft bg-white p-4 text-left shadow-xs transition hover:-translate-y-0.5 hover:border-meyah-border hover:shadow-md sm:p-4.5"
+      onMouseEnter={() => onHoverChange?.(true)}
+      onMouseLeave={() => onHoverChange?.(false)}
+      className={cn(
+        'group relative flex w-full gap-4 rounded-card border border-meyah-border-soft bg-white p-4 text-left shadow-xs transition hover:-translate-y-0.5 hover:border-meyah-border hover:shadow-md sm:p-4.5',
+        isActive && 'border-meyah-jade-500/50 shadow-md ring-2 ring-meyah-jade-500/30',
+      )}
     >
       <div className="grid h-12 w-12 flex-none place-items-center rounded-[14px] bg-meyah-jade-50 text-meyah-jade-700 transition group-hover:bg-meyah-jade-500 group-hover:text-white">
         <Icon size={22} />

@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { MapPin, Search, X } from 'lucide-react'
+import { MapPin, Search, X, Map as MapIcon, List } from 'lucide-react'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useNearbyJobs } from '@/features/jobs/hooks/useNearbyJobs'
 import NearbyJobCard from '@/features/jobs/components/NearbyJobCard'
+import FeedMap from '@/features/jobs/components/FeedMap'
 import JobSheet from '@/features/jobs/components/JobSheet'
 import { JOB_CATEGORIES, ICON_BY_CATEGORY } from '@/features/jobs/schemas/categories'
 import type { JobCategoryValue } from '@/features/jobs/schemas/categories'
@@ -17,6 +18,8 @@ export default function FeedPage() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<JobCategoryValue | 'todas'>('todas')
   const [selected, setSelected] = useState<{ id: string; distanciaM: number | null } | null>(null)
+  const [hoveredJobId, setHoveredJobId] = useState<string | null>(null)
+  const [showMap, setShowMap] = useState(false)
 
   const hasLocation = profile?.lat_referencia != null
 
@@ -159,6 +162,8 @@ export default function FeedPage() {
                 <NearbyJobCard
                   job={job}
                   onSelect={() => setSelected({ id: job.id, distanciaM: job.distancia_m })}
+                  isActive={job.id === hoveredJobId}
+                  onHoverChange={h => setHoveredJobId(h ? job.id : null)}
                 />
               </div>
             ))}
@@ -171,8 +176,49 @@ export default function FeedPage() {
 
       {/* ===== Columna mapa (solo escritorio) ===== */}
       <section className="hidden lg:block">
-        <div className="greca sticky top-20 h-[calc(100dvh-80px)] bg-meyah-crema-100" />
+        <div className="sticky top-20 h-[calc(100dvh-80px)]">
+          <FeedMap
+            jobs={filtered}
+            userLat={profile?.lat_referencia ?? null}
+            userLng={profile?.lng_referencia ?? null}
+            onSelect={job => setSelected({ id: job.id, distanciaM: job.distancia_m })}
+            hoveredJobId={hoveredJobId}
+            onHover={setHoveredJobId}
+          />
+        </div>
       </section>
+
+      {/* ===== FAB "Ver mapa" (solo móvil, mapa cerrado) ===== */}
+      {!showMap && (
+        <button
+          type="button"
+          onClick={() => setShowMap(true)}
+          className="fixed bottom-20 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-meyah-jade-900 px-5 py-3 text-[14px] font-semibold text-white shadow-lg lg:hidden"
+        >
+          <MapIcon size={17} /> Ver mapa
+        </button>
+      )}
+
+      {/* ===== Overlay de mapa a pantalla completa (solo móvil) ===== */}
+      {showMap && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <FeedMap
+            jobs={filtered}
+            userLat={profile?.lat_referencia ?? null}
+            userLng={profile?.lng_referencia ?? null}
+            onSelect={job => setSelected({ id: job.id, distanciaM: job.distancia_m })}
+            hoveredJobId={null}
+            onHover={() => {}}
+          />
+          <button
+            type="button"
+            onClick={() => setShowMap(false)}
+            className="absolute left-4 top-4 z-[1000] inline-flex items-center gap-1.5 rounded-full border border-meyah-border-soft bg-white px-4 py-2.5 text-[14px] font-semibold text-meyah-jade-900 shadow-lg"
+          >
+            <List size={16} /> Ver lista
+          </button>
+        </div>
+      )}
 
       {selected && (
         <JobSheet

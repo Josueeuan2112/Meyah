@@ -598,6 +598,8 @@ export type Database = {
           company_nombre: string
           distancia_m: number
           id: string
+          lat: number
+          lng: number
           salario_max: number
           salario_min: number
           titulo: string
