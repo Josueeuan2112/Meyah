@@ -42,7 +42,9 @@ export default function LandingPage() {
             </p>
             <div className="reveal mt-8 flex flex-wrap gap-3" style={{ animationDelay: '.18s' }}>
               <Button size="lg" asChild><Link to="/registro">Busco empleo <ArrowRight /></Link></Button>
+              {/* TEMPORAL: entrada de empleadores oculta durante las pruebas con candidatos
               <Button variant="outline" size="lg" asChild><Link to="/registro">Quiero contratar</Link></Button>
+              */}
             </div>
             <div className="reveal mt-[34px] flex items-center gap-3.5" style={{ animationDelay: '.24s' }}>
               <div className="flex">
@@ -139,7 +141,9 @@ export default function LandingPage() {
             <h2 className="mt-3 mb-[18px] text-[clamp(30px,4vw,46px)] text-white">Contrata a gente<br />que vive cerca</h2>
             <p className="max-w-[440px] text-[17px] leading-[1.65] text-white/[0.78]">Publica tu vacante en el mapa y recibe postulaciones de personas de la zona. Menos rotación, menos retrasos, más compromiso.</p>
             <div className="mt-[30px]">
+              {/* TEMPORAL: entrada de empleadores oculta durante las pruebas con candidatos
               <Button size="lg" asChild className="bg-meyah-terracota-500 text-white hover:bg-meyah-terracota-700"><Link to="/registro">Publicar una vacante <ArrowRight /></Link></Button>
+              */}
               <div className="mt-7 flex gap-[30px] max-[600px]:flex-wrap max-[600px]:gap-5">
                 {[['Gratis', 'para empezar'], ['2 min', 'publicar'], ['0 km', 'de distancia ideal']].map(([b, s]) => (
                   <div key={b}><b className="block font-display text-2xl text-white">{b}</b><span className="text-[12.5px] text-white/60">{s}</span></div>
