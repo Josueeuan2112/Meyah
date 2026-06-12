@@ -1,42 +1,32 @@
-// ADVERTENCIA: los dos updates de soft-delete NO son una transacción atómica real.
-// Si el paso 2 (job) fallara tras el paso 1 (applications), las postulaciones quedarían
-// eliminadas pero el job seguiría vivo. Riesgo bajo en MVP; en el futuro mover a una
-// función RPC de Postgres que ejecute ambos updates dentro de una transacción real.
-// TODO: reemplazar por rpc('soft_delete_job', { job_id }) cuando haya más volumen.
-
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '@/shared/lib/supabase'
-import { useMyCompany } from '@/features/companies/hooks/useMyCompany'
+
+// Soft-delete vía RPC soft_delete_job: marca la vacante Y sus postulaciones
+// en UNA transacción de Postgres (antes eran dos updates desde el cliente y
+// un fallo a medias dejaba estado corrupto). SECURITY INVOKER: la RLS sigue
+// aplicando — si el caller no es dueño, la RPC devuelve false y no toca nada.
 
 export function useDeleteJob() {
   const queryClient = useQueryClient()
-  const { data: company } = useMyCompany()
 
   return useMutation({
     mutationFn: async (jobId: string): Promise<void> => {
-      const deletedAt = new Date().toISOString()
+      const { data: deleted, error } = await supabase.rpc('soft_delete_job', {
+        p_job_id: jobId,
+      })
 
-      // Paso 1 — postulaciones primero: si algo falla después, el job sigue vivo
-      // y el estado es recuperable. Un job fantasma sin postulaciones sería peor.
-      const { error: appsError } = await supabase
-        .from('applications')
-        .update({ deleted_at: deletedAt })
-        .eq('job_id', jobId)
-        .is('deleted_at', null)
-
-      if (appsError) throw appsError
-
-      // Paso 2 — la vacante
-      const { error: jobError } = await supabase
-        .from('jobs')
-        .update({ deleted_at: deletedAt })
-        .eq('id', jobId)
-
-      if (jobError) throw jobError
+      if (error) throw error
+      if (!deleted) throw new Error('La vacante no existe o no te pertenece.')
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['jobs', 'mine', company?.id] })
+    onSuccess: (_void, jobId) => {
+      // Prefijo ['jobs','mine']: cubre la lista (['jobs','mine',companyId])
+      // y las stats de proximidad (['jobs','mine','proximity']) de un golpe
+      void queryClient.invalidateQueries({ queryKey: ['jobs', 'mine'] })
+      // El detalle cacheado seguía mostrando la vacante ya borrada; ambas
+      // queries filtran deleted_at, así que al refetch desaparece.
+      void queryClient.invalidateQueries({ queryKey: ['jobs', 'detail', jobId] })
+      void queryClient.invalidateQueries({ queryKey: ['jobs', 'detail-full', jobId] })
     },
   })
 }

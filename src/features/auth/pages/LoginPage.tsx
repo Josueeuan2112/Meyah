@@ -3,24 +3,24 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
-import { ArrowRight, Mail } from 'lucide-react'
+import { ArrowRight, Check, User } from 'lucide-react'
 
 import { loginSchema, type LoginFormData } from '@/features/auth/schemas/auth.schemas'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import AuthInput from '@/features/auth/components/AuthInput'
+import BrandMap from '@/shared/components/BrandMap'
 import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Label } from '@/shared/ui/label'
 
 function Wordmark({ className }: { className?: string }) {
   return (
-    <div className={className}>
+    <span className={className}>
       Meyah<span className="h-1.5 w-1.5 self-center rounded-full bg-meyah-terracota-500" />
-    </div>
+    </span>
   )
 }
 
 export default function LoginPage() {
-  const { signIn } = useAuth()
+  const { signIn, resendConfirmation } = useAuth()
   const navigate = useNavigate()
   const [show, setShow] = useState(false)
 
@@ -36,6 +36,23 @@ export default function LoginPage() {
     const { error } = await signIn(data.email, data.password)
 
     if (error) {
+      // Cuenta sin confirmar ≠ credenciales malas: con verificación de email
+      // activa, Supabase responde "Email not confirmed". Decirlo claro y
+      // ofrecer el reenvío evita el callejón "mi contraseña está bien y no entro".
+      if (error.message.toLowerCase().includes('not confirmed')) {
+        toast.error('Tu correo aún no está confirmado. Revisa tu bandeja o spam.', {
+          action: {
+            label: 'Reenviar',
+            onClick: () => {
+              void resendConfirmation(data.email).then(({ error: resendError }) => {
+                if (resendError) toast.error('No se pudo reenviar. Intenta más tarde.')
+                else toast.success('Correo de confirmación reenviado')
+              })
+            },
+          },
+        })
+        return
+      }
       // Mensaje genérico intencional: no revelar si el correo existe o no
       toast.error('Correo o contraseña incorrectos')
       return
@@ -48,97 +65,105 @@ export default function LoginPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
 
-      {/* Panel izquierdo: marca (solo desktop) */}
-      <div className="greca relative hidden flex-col justify-between overflow-hidden bg-meyah-jade-900 p-12 text-white lg:flex">
-        <Wordmark className="flex items-baseline gap-0.75 font-display text-[26px] font-semibold text-white" />
+      {/* Panel de marca (solo desktop) */}
+      <aside className="greca relative hidden flex-col overflow-hidden bg-meyah-jade-900 px-12 py-10 text-white lg:flex">
+        <Link to="/" className="self-start">
+          <Wordmark className="flex items-baseline gap-0.75 font-display text-[26px] font-semibold text-white" />
+        </Link>
 
-        <div>
-          <h2 className="font-display text-[clamp(34px,4vw,52px)] leading-[1.02] tracking-[-0.02em] text-white">
+        <div className="mt-14">
+          <h2 className="font-display text-[clamp(34px,4vw,50px)] leading-[1.0] tracking-[-0.03em] text-white">
             Trabajo<br />cerca de casa.
           </h2>
-          <p className="mt-4 max-w-90 text-[15.5px] leading-[1.6] text-white/75">
+          <p className="mt-[18px] max-w-[360px] text-[16px] leading-[1.6] text-white/75">
             Vuelve a tu mapa y descubre las vacantes nuevas que se publicaron en tu zona.
           </p>
-          <div className="mt-8 aspect-4/3 max-w-105 overflow-hidden rounded-panel border border-white/15 bg-white/6" />
         </div>
 
-        <p className="text-[13px] text-white/55">Hecho en Mérida, Yucatán</p>
-      </div>
+        <div className="mt-[38px] min-h-[220px] flex-1 overflow-hidden rounded-panel border border-white/15 shadow-lg">
+          <BrandMap variant="dark" />
+        </div>
 
-      {/* Panel derecho: formulario */}
-      <div className="flex items-center justify-center px-6 py-10 lg:px-12">
-        <div className="w-full max-w-[400px]">
+        <p className="mt-7 text-[13px] text-white/50">Hecho en Mérida, Yucatán</p>
+      </aside>
 
-          {/* Wordmark jade (solo móvil, panel izquierdo oculto) */}
-          <div className="mb-8 lg:hidden">
-            <Wordmark className="flex items-baseline gap-0.75 font-display text-[24px] font-semibold text-meyah-jade-700" />
-          </div>
+      {/* Formulario */}
+      <div className="flex items-start justify-center px-7 pb-10 pt-12 lg:items-center lg:py-10">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          className="flex w-full max-w-[400px] flex-col"
+          style={{ animation: 'rise .5s cubic-bezier(.2,.7,.3,1) forwards' }}
+        >
+          {/* Wordmark (solo móvil: el panel de marca está oculto) */}
+          <Link to="/" className="mb-6 self-start lg:hidden">
+            <Wordmark className="flex items-baseline gap-0.75 font-display text-[24px] font-semibold text-meyah-jade-900" />
+          </Link>
 
           <span className="eyebrow">Te damos la bienvenida</span>
-          <h1 className="mt-1 text-[clamp(28px,4vw,36px)]">Inicia sesión</h1>
-          <p className="mt-2 text-[15px] text-meyah-tinta-600">
+          <h1 className="mt-2.5 text-[34px]">Inicia sesión</h1>
+          <p className="mb-[26px] mt-2.5 text-[15px] text-meyah-tinta-600">
             Entra para ver empleo cerca de ti en Mérida.
           </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-7 flex flex-col gap-4">
+          <label className="mb-4 flex flex-col gap-2">
+            <span className="text-[13.5px] font-semibold text-meyah-tinta-900">Correo electrónico</span>
+            <AuthInput
+              type="email"
+              placeholder="tu@correo.com"
+              autoComplete="email"
+              icon={<User size={17} />}
+              aria-invalid={!!errors.email}
+              {...register('email')}
+            />
+            {errors.email && (
+              <span className="text-[12.5px] text-meyah-terracota-700">{errors.email.message}</span>
+            )}
+          </label>
 
-            {/* Correo */}
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email" className="text-[13.5px] font-semibold text-meyah-tinta-900">
-                Correo electrónico
-              </Label>
-              <div className="relative">
-                <Mail size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-meyah-tinta-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="tucorreo@ejemplo.com"
-                  aria-invalid={!!errors.email}
-                  className="pl-10"
-                  {...register('email')}
-                />
-              </div>
-              {errors.email && (
-                <p className="text-[12.5px] text-meyah-terracota-700">{errors.email.message}</p>
-              )}
-            </div>
-
-            {/* Contraseña */}
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password" className="text-[13.5px] font-semibold text-meyah-tinta-900">
-                Contraseña
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={show ? 'text' : 'password'}
-                  placeholder="Tu contraseña"
-                  aria-invalid={!!errors.password}
-                  className="pr-20"
-                  {...register('password')}
-                />
+          <label className="mb-4 flex flex-col gap-2">
+            <span className="flex items-baseline justify-between">
+              <span className="text-[13.5px] font-semibold text-meyah-tinta-900">Contraseña</span>
+              <Link
+                to="/recuperar"
+                className="text-[13px] font-semibold text-meyah-tinta-600 transition-colors hover:text-meyah-jade-700"
+              >
+                ¿La olvidaste?
+              </Link>
+            </span>
+            <AuthInput
+              type={show ? 'text' : 'password'}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              icon={<Check size={17} />}
+              aria-invalid={!!errors.password}
+              trailing={
                 <button
                   type="button"
                   onClick={() => setShow(s => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium text-meyah-jade-700"
+                  className="flex-none text-[13px] font-semibold text-meyah-jade-700"
                 >
-                  {show ? 'Ocultar' : 'Mostrar'}
+                  {show ? 'Ocultar' : 'Ver'}
                 </button>
-              </div>
-              {errors.password && (
-                <p className="text-[12.5px] text-meyah-terracota-700">{errors.password.message}</p>
-              )}
-            </div>
+              }
+              {...register('password')}
+            />
+            {errors.password && (
+              <span className="text-[12.5px] text-meyah-terracota-700">{errors.password.message}</span>
+            )}
+          </label>
 
-            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Entrando…' : 'Entrar'} <ArrowRight />
-            </Button>
-          </form>
+          <Button type="submit" size="lg" className="mt-2.5 w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Entrando…' : 'Entrar'} <ArrowRight />
+          </Button>
 
           <p className="mt-6 text-center text-[14px] text-meyah-tinta-600">
-            ¿No tienes cuenta? <Link to="/registro" className="font-semibold text-meyah-jade-700 hover:underline">Créala gratis</Link>
+            ¿No tienes cuenta?{' '}
+            <Link to="/registro" className="font-semibold text-meyah-jade-700 hover:underline">
+              Créala gratis
+            </Link>
           </p>
-        </div>
+        </form>
       </div>
     </div>
   )

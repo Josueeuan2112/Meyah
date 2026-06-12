@@ -31,6 +31,10 @@ export const companySchema = z.object({
     .pipe(
       z.string().url('Ingresa una URL válida (ej: https://miempresa.com).').optional()
     ),
+
+  // Ubicación del negocio: se usa como default del mapa al publicar vacantes
+  lat: z.number().min(-90).max(90).nullable().optional(),
+  lng: z.number().min(-180).max(180).nullable().optional(),
 })
 
 export type CompanyFormValues = z.infer<typeof companySchema>

@@ -1,14 +1,16 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { z } from 'zod'
-import { MapPin } from 'lucide-react'
 
 import { companySchema, type CompanyFormValues } from '@/features/companies/schemas/companySchema'
+import LocationPicker from '@/features/jobs/components/LocationPicker'
 import type { Company } from '@/shared/types'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
+
+const MERIDA_CENTER: [number, number] = [20.9674, -89.5926]
 
 interface CompanyFormProps {
   company?: Company
@@ -20,6 +22,7 @@ export default function CompanyForm({ company, onSubmit, isSubmitting = false }:
   const {
     register,
     handleSubmit,
+    setValue,
     watch,
     formState: { errors },
   } = useForm<z.input<typeof companySchema>, unknown, CompanyFormValues>({
@@ -29,11 +32,14 @@ export default function CompanyForm({ company, onSubmit, isSubmitting = false }:
       descripcion: company?.descripcion ?? '',
       direccion:   company?.direccion   ?? '',
       sitio_web:   company?.sitio_web   ?? '',  // siempre string en el form, nunca undefined
+      lat:         company?.lat         ?? MERIDA_CENTER[0],
+      lng:         company?.lng         ?? MERIDA_CENTER[1],
     },
   })
 
   const nombre = watch('nombre')
-  const direccion = watch('direccion')
+  const lat = watch('lat') ?? MERIDA_CENTER[0]
+  const lng = watch('lng') ?? MERIDA_CENTER[1]
 
   const nombreTrim = nombre.trim()
   const iniciales = nombreTrim
@@ -128,16 +134,19 @@ export default function CompanyForm({ company, onSubmit, isSubmitting = false }:
           <h4 className="mt-1 font-display text-[22px] text-meyah-jade-900">Tu negocio en el mapa</h4>
           <p className="mt-1 text-[14px] text-meyah-tinta-600">Define dónde estás para conectar con gente cercana.</p>
 
-          <div className="mt-4 grid h-70 place-items-center overflow-hidden rounded-card border border-meyah-border-soft bg-meyah-crema-50 text-center">
-            <div className="flex flex-col items-center gap-3 px-6">
-              <div className="grid h-12 w-12 place-items-center rounded-[14px] bg-meyah-crema-100 text-meyah-tinta-400">
-                <MapPin size={22} />
-              </div>
-              <p className="text-[13.5px] text-meyah-tinta-600">
-                {direccion || 'Agrega la dirección de tu negocio'}
-              </p>
-            </div>
+          <div className="mt-4 h-70 overflow-hidden rounded-card border border-meyah-border-soft">
+            <LocationPicker
+              lat={lat}
+              lng={lng}
+              onChange={(newLat, newLng) => {
+                setValue('lat', newLat, { shouldValidate: true })
+                setValue('lng', newLng, { shouldValidate: true })
+              }}
+            />
           </div>
+          <p className="mt-2.5 text-[12.5px] text-meyah-tinta-400">
+            Arrastra el pin o toca el mapa. Esta ubicación se usará como punto de partida al publicar vacantes.
+          </p>
         </div>
       </div>
     </form>

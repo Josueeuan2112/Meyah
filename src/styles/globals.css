@@ -125,6 +125,9 @@ p { text-wrap: pretty; }
   100% { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
 }
 @keyframes sheetIn { from { transform: translateX(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+@keyframes heartPop {
+  0% { transform: scale(.6); } 60% { transform: scale(1.08); } 100% { transform: scale(1); }
+}
 
 /* ── Utilidades ────────────────────────────────────────────────────────────── */
 
@@ -152,6 +155,28 @@ p { text-wrap: pretty; }
 }
 .chip:hover { border-color: var(--color-meyah-border); background: #fff; }
 .chip[data-active="true"] { background: var(--color-meyah-jade-900); color: #fff; border-color: var(--color-meyah-jade-900); }
+
+/* Slider de radio (registro): track crema y thumb jade. Vive aquí porque los
+   pseudo-elementos de input[type=range] no se alcanzan con utilidades Tailwind. */
+.meyah-range {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 6px; border-radius: 99px;
+  background: var(--color-meyah-crema-200);
+  outline: none;
+}
+.meyah-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--color-meyah-jade-500); cursor: grab;
+  border: 4px solid #fff; box-shadow: var(--shadow-sm);
+  transition: transform .15s;
+}
+.meyah-range::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.1); }
+.meyah-range::-moz-range-thumb {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--color-meyah-jade-500); cursor: grab;
+  border: 4px solid #fff; box-shadow: var(--shadow-sm);
+}
 
 /* ── Reduced motion ────────────────────────────────────────────────────────── */
 

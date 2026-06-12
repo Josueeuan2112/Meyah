@@ -20,6 +20,8 @@ export function useCreateCompany() {
           // undefined se convierte en null: la columna es nullable,
           // nunca insertamos string vacío
           sitio_web: input.sitio_web ?? null,
+          lat: input.lat ?? null,
+          lng: input.lng ?? null,
           owner_id: user!.id,
         })
         .select()

@@ -117,6 +117,14 @@ export default function FeedPage() {
           </div>
         )}
 
+        {/* Aviso de radio activo: sin él, un radio chico parece "no hay vacantes" */}
+        {hasLocation && profile?.radio_busqueda_km != null && (
+          <p className="mx-4 mt-3 text-[12.5px] text-meyah-tinta-400 sm:mx-6.5">
+            Mostrando vacantes a menos de <b className="text-meyah-tinta-600">{profile.radio_busqueda_km} km</b> de tu casa.{' '}
+            <Link to="/mi-perfil" className="font-semibold text-meyah-jade-700 underline">Ajustar radio</Link>
+          </p>
+        )}
+
         {/* Estados de carga / error / vacío / datos */}
         {isPending ? (
           <div className="flex flex-col gap-3 px-4 pt-4.5 pb-28 sm:px-6.5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">

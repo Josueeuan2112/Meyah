@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { ArrowRight, Building2, MapPin, Route, User } from 'lucide-react'
 
 import { Button } from '@/shared/ui/button'
+import BrandMap from '@/shared/components/BrandMap'
 import { JOB_CATEGORIES, ICON_BY_CATEGORY } from '@/features/jobs/schemas/categories'
 
 const scrollTo = (id: string) =>
@@ -56,7 +57,8 @@ export default function LandingPage() {
 
           <div className="reveal relative max-w-[460px] md:max-w-none" style={{ animationDelay: '.16s' }}>
             <div className="aspect-[4/3.5] overflow-hidden rounded-panel border border-meyah-border-soft shadow-lg">
-              <div className="greca h-full w-full bg-meyah-crema-100" />
+              {/* showCard apagado: la tarjeta grande "Gerente de tienda" ya flota encima */}
+              <BrandMap showCard={false} />
             </div>
             <div className="absolute -bottom-[26px] -left-[22px] w-[270px] rounded-card border border-meyah-border-soft bg-white px-5 py-[18px] shadow-lg max-[600px]:left-0 max-[600px]:w-[240px]">
               <span className="inline-flex items-center rounded-full bg-meyah-jade-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-white">Vacante cerca</span>

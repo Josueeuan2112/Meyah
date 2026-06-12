@@ -16,6 +16,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 
 const fechaFmt = new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
 
+// Nueva vigencia al reabrir una vacante vencida: 30 días desde ahora (mismo
+// plazo que el default de creación). A nivel de módulo para que el linter de
+// purity del React Compiler no marque Date.now() dentro del componente.
+function renovarVigencia(): string {
+  return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+}
+
 export default function DashboardPage() {
   // Todos los hooks antes de cualquier return condicional (reglas de hooks)
   const { data: company, isLoading: companyLoading, isError: companyError } = useMyCompany()
@@ -25,9 +32,20 @@ export default function DashboardPage() {
   const deleteJob = useDeleteJob()
 
   const handleToggleEstado = (job: MyJob) => {
-    const estado = job.estado === 'abierta' ? 'cerrada' : 'abierta'
+    const estado: 'abierta' | 'cerrada' = job.estado === 'abierta' ? 'cerrada' : 'abierta'
+
+    // Reabrir una vacante vencida sin extender expires_at era un estado
+    // inconsistente: el toast decía "reabierta" pero el feed (expires_at >
+    // now()) jamás la mostraba ni aceptaba postulaciones. Al reabrir vencida,
+    // se renueva la vigencia 30 días (mismo plazo que el default de creación).
+    const vencida = job.expires_at != null && new Date(job.expires_at) < new Date()
+    const data =
+      estado === 'abierta' && vencida
+        ? { estado, expires_at: renovarVigencia() }
+        : { estado }
+
     updateJob.mutate(
-      { id: job.id, data: { estado } },
+      { id: job.id, data },
       {
         onSuccess: () => toast.success(estado === 'cerrada' ? 'Vacante cerrada' : 'Vacante reabierta'),
         onError:   () => toast.error('No se pudo actualizar la vacante'),
@@ -197,6 +215,13 @@ export default function DashboardPage() {
               const abierta = job.estado === 'abierta'
               const count = job.applications?.[0]?.count ?? 0
               const vencida = job.estado === 'abierta' && job.expires_at != null && new Date(job.expires_at) < new Date()
+              // Aviso temprano: días restantes de vigencia (solo abiertas no vencidas,
+              // visible a partir de 7 días) — evita el funnel muerto de vacantes vencidas
+              const diasRestantes =
+                abierta && !vencida && job.expires_at != null
+                  ? Math.ceil((new Date(job.expires_at).getTime() - new Date().getTime()) / 86400000)
+                  : null
+              const porVencer = diasRestantes != null && diasRestantes <= 7
 
               return (
                 <article
@@ -218,6 +243,11 @@ export default function DashboardPage() {
                       {vencida && (
                         <span className="rounded-full bg-meyah-terracota-50 px-3.25 py-1.5 text-[13px] font-semibold text-meyah-terracota-700">
                           Vencida
+                        </span>
+                      )}
+                      {porVencer && (
+                        <span className="rounded-full bg-meyah-terracota-50 px-3.25 py-1.5 text-[13px] font-semibold text-meyah-terracota-700">
+                          Vence en {diasRestantes} {diasRestantes === 1 ? 'día' : 'días'}
                         </span>
                       )}
                       <span

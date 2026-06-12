@@ -41,7 +41,10 @@ export function useCreateJob() {
       return data
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['jobs', 'mine', company?.id] })
+      // Prefijo ['jobs','mine']: cubre la lista (['jobs','mine',companyId]) y
+      // las stats de proximidad (['jobs','mine','proximity']), que con la key
+      // exacta nunca se invalidaban y quedaban viejas tras publicar
+      void queryClient.invalidateQueries({ queryKey: ['jobs', 'mine'] })
     },
   })
 }

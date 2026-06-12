@@ -20,6 +20,8 @@ export function useUpdateCompany() {
           // undefined se convierte en null: la columna es nullable,
           // nunca actualizamos con string vacío
           sitio_web: data.sitio_web ?? null,
+          lat: data.lat ?? null,
+          lng: data.lng ?? null,
         })
         .eq('id', id)
         .select()

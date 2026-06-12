@@ -33,6 +33,7 @@ export default function ProfileForm({ defaultValues, onSubmit, isSubmitting, rol
   const nombre = watch('nombre')
   const lat = watch('lat_referencia')
   const lng = watch('lng_referencia')
+  const radio = watch('radio_busqueda_km')
   const tieneUbicacion = lat !== null && lng !== null
 
   const nombreTrim = nombre.trim()
@@ -117,6 +118,34 @@ export default function ProfileForm({ defaultValues, onSubmit, isSubmitting, rol
               <p className="flex items-center gap-1.5 text-[13px] text-meyah-tinta-400">
                 <MapPin size={14} className="text-meyah-jade-600" /> Arrastra el punto para cambiar tu zona.
               </p>
+
+              {/* Radio de búsqueda — solo candidato: filtra qué tan lejos ve vacantes */}
+              {roleLabel === 'Candidato' && (
+                <div className="mt-4 rounded-card border border-meyah-border-soft bg-meyah-crema-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="radio" className="text-[13.5px] font-semibold text-meyah-tinta-900">
+                      Radio de búsqueda
+                    </Label>
+                    <span className="rounded-full bg-meyah-jade-50 px-2.5 py-0.5 text-[13px] font-bold text-meyah-jade-700">
+                      {radio != null ? `${radio} km` : 'Sin límite'}
+                    </span>
+                  </div>
+                  <input
+                    id="radio"
+                    type="range"
+                    min={1}
+                    max={20}
+                    step={1}
+                    value={radio ?? 20}
+                    onChange={e => setValue('radio_busqueda_km', Number(e.target.value), { shouldDirty: true })}
+                    className="mt-3 w-full accent-meyah-jade-700"
+                  />
+                  <p className="mt-1.5 text-[12px] text-meyah-tinta-400">
+                    Solo verás vacantes dentro de esta distancia de tu casa.
+                  </p>
+                </div>
+              )}
+
               <Button type="button" variant="ghost" size="sm" onClick={quitarUbicacion}>
                 Quitar ubicación
               </Button>

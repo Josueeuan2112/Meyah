@@ -1,10 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { z } from 'zod'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Users } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
 import { jobSchema, type JobFormValues } from '@/features/jobs/schemas/jobSchema'
+import { useCandidatesNearCount } from '@/features/jobs/hooks/useCandidatesNearCount'
 import { ICON_BY_CATEGORY, JOB_CATEGORIES, JOB_SCHEDULES } from '@/features/jobs/schemas/categories'
 import type { Job } from '@/shared/types'
 import { cn } from '@/shared/lib/utils'
@@ -16,11 +17,13 @@ import LocationPicker from '@/features/jobs/components/LocationPicker'
 
 interface JobFormProps {
   job?: Job
+  /** Punto de partida del mapa al crear (la ubicación de la empresa, si la tiene) */
+  defaultLocation?: { lat: number; lng: number } | null
   onSubmit: (values: JobFormValues) => void
   isSubmitting?: boolean
 }
 
-export default function JobForm({ job, onSubmit, isSubmitting = false }: JobFormProps) {
+export default function JobForm({ job, defaultLocation, onSubmit, isSubmitting = false }: JobFormProps) {
   const navigate = useNavigate()
   const isEdit = !!job
 
@@ -43,8 +46,9 @@ export default function JobForm({ job, onSubmit, isSubmitting = false }: JobForm
       jornada:     (job?.jornada ?? 'tiempo_completo') as JobFormValues['jornada'],
       salario_min: job?.salario_min ?? 0,
       salario_max: job?.salario_max ?? 0,
-      lat:         job?.lat         ?? 20.97,  // centro de Mérida por defecto
-      lng:         job?.lng         ?? -89.62,
+      // Al crear: parte de la ubicación de la empresa si existe; si no, centro de Mérida
+      lat:         job?.lat         ?? defaultLocation?.lat ?? 20.97,
+      lng:         job?.lng         ?? defaultLocation?.lng ?? -89.62,
     },
   })
 
@@ -53,6 +57,10 @@ export default function JobForm({ job, onSubmit, isSubmitting = false }: JobForm
   const lng = watch('lng')
   const categoria = watch('categoria')
   const jornada = watch('jornada')
+
+  // Candidatos buscables a <3 km del pin: el dato que vende la propuesta de
+  // valor ("contrata gente que vive cerca") justo al momento de publicar
+  const { data: candidatosCerca } = useCandidatesNearCount(lat as number, lng as number)
 
   const chipBase = 'inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13.5px] font-medium transition border'
 
@@ -238,6 +246,15 @@ export default function JobForm({ job, onSubmit, isSubmitting = false }: JobForm
               {(errors.lat ?? errors.lng) && (
                 <p className="mb-3 text-[12.5px] text-meyah-terracota-700">
                   Selecciona una ubicación válida en el mapa.
+                </p>
+              )}
+
+              {candidatosCerca != null && candidatosCerca > 0 && (
+                <p className="mb-3 flex items-center gap-1.5 rounded-field bg-meyah-jade-50 px-3 py-2.5 text-[13px] font-medium text-meyah-jade-900">
+                  <Users size={15} className="flex-none text-meyah-jade-600" />
+                  <span>
+                    <b>{candidatosCerca}</b> {candidatosCerca === 1 ? 'candidato vive' : 'candidatos viven'} a menos de 3 km de este punto
+                  </span>
                 </p>
               )}
 

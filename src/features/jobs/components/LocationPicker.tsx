@@ -1,21 +1,14 @@
 import { useMemo, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
-import L from 'leaflet'
+import type L from 'leaflet'
 
-import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png?url'
-import iconUrl from 'leaflet/dist/images/marker-icon.png?url'
-import shadowUrl from 'leaflet/dist/images/marker-shadow.png?url'
+import { meyahPin } from '@/shared/lib/mapPin'
 
-// Leaflet usa _getIconUrl internamente y puede ignorar las opciones de ícono.
-// Borrarlo fuerza a Leaflet a respetar las URLs que pasamos abajo.
-// `as unknown as { _getIconUrl?: unknown }` evita `any` (propiedad interna no tipada).
-delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl
+// Pin de marca (gota jade glossy) en lugar del marker azul default de Leaflet.
+// Tiles de CARTO light: mismos del FeedMap/ZonePicker, para que todos los
+// mapas de la app se vean de la misma familia.
 
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl,
-  iconUrl,
-  shadowUrl,
-})
+const PIN = meyahPin(42)
 
 interface LocationPickerProps {
   lat: number
@@ -23,18 +16,19 @@ interface LocationPickerProps {
   onChange: (lat: number, lng: number) => void
 }
 
+// A nivel de módulo (no dentro del componente): definir componentes durante el
+// render rompe la identidad entre renders y lo marca react-hooks como error.
+function ClickHandler({ onPick }: { onPick: (lat: number, lng: number) => void }) {
+  useMapEvents({
+    click(e) {
+      onPick(e.latlng.lat, e.latlng.lng)
+    },
+  })
+  return null
+}
+
 export default function LocationPicker({ lat, lng, onChange }: LocationPickerProps) {
   const markerRef = useRef<L.Marker>(null)
-
-  // Subcomponente que captura clics en el mapa
-  function ClickHandler() {
-    useMapEvents({
-      click(e) {
-        onChange(e.latlng.lat, e.latlng.lng)
-      },
-    })
-    return null
-  }
 
   // Memoizar los eventHandlers para no recrearlos en cada render
   const eventHandlers = useMemo(
@@ -57,12 +51,13 @@ export default function LocationPicker({ lat, lng, onChange }: LocationPickerPro
       style={{ height: '100%', width: '100%' }}
     >
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        attribution="&copy; OpenStreetMap &copy; CARTO"
       />
-      <ClickHandler />
+      <ClickHandler onPick={onChange} />
       <Marker
         position={[lat, lng]}
+        icon={PIN}
         draggable
         ref={markerRef}
         eventHandlers={eventHandlers}

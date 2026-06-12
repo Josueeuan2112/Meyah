@@ -174,6 +174,17 @@ features/<nombre>/
 5. **Row Level Security activado** en todas las tablas de Supabase.
 6. **No hashes ni encriptes contraseñas a mano.** Lo hace Supabase Auth.
 
+### Checklist manual de Auth en el dashboard (antes de lanzar)
+
+Pasos que NO se pueden hacer por CLI/migración — se hacen una vez en el dashboard de Supabase y se palomean aquí:
+
+- [bien ] **Activar "Confirm email"** (Auth → Sign In / Up). El código ya lo soporta: `emailRedirectTo` en signUp, reenvío de confirmación en registro y login, y manejo del error "Email not confirmed". Se prende al FINAL de la etapa para no frenar pruebas de dev.
+- [bien ] **Registrar Redirect URLs** (Auth → URL Configuration): `http://localhost:5173/login`, `http://localhost:5173/restablecer` y sus equivalentes del dominio de producción. Sin esto, los enlaces de confirmación y de reset rebotan.
+- [ bien] **Minimum password length = 8** (Auth → Sign In / Up → Passwords), alineado con el mínimo de Zod (`registerSchema`/`resetPasswordSchema`). Cliente y servidor deben pedir lo mismo.
+- [bien ] **Leaked password protection ON** (mismo panel; integra HaveIBeenPwned). Toggle gratis que rechaza contraseñas ya filtradas en brechas.
+- [bien ] **Revisar Auth → Rate Limits**: defaults razonables, pero con verificación + reset el límite de envío de emails se usará más; conocer los valores antes de lanzar.
+- [ bien] **Usuarios no confirmados**: decisión MVP = se aceptan (no pueden iniciar sesión; daño mínimo). Si crecen, configurar limpieza de cuentas sin confirmar tras X días (job o función programada) — anotado, no implementado.
+
 ## 📐 Decisiones de arquitectura
 
 ### Lo que SÍ está en el MVP
@@ -215,6 +226,14 @@ Algunas tablas tienen campos como `is_featured`, `views_count`, `is_verified`, `
 - Conciso, sin relleno.
 - Si haces algo que no pedí, marcarlo explícitamente como "agregué X porque Y".
 - Mostrar siempre el contenido final de archivos modificados, no solo diffs.
+
+## Migraciones de base de datos (flujo oficial)
+
+- **Toda alteración del esquema va en un archivo versionado** en `supabase/migrations/` con timestamp (`YYYYMMDDHHMMSS_nombre.sql`) y se aplica con `npx supabase db push --linked`. **NUNCA usar el SQL Editor del dashboard** para cambios de esquema: desincroniza el remoto de los archivos versionados.
+- Verificar sincronía con `npx supabase migration list --linked` (no requiere Docker): las columnas Local y Remote deben coincidir 1:1.
+- Antes de modificar una función existente, obtener su definición real con `npx supabase db query --linked "select pg_get_functiondef('public.<fn>'::regproc);"` para no perder cláusulas.
+- Después de cualquier migración que cambie tablas/funciones expuestas: `npm run gen:types`.
+- `supabase db pull` / `db diff` requieren Docker Desktop o el cliente de Postgres (`pg_dump`) — hoy NO están instalados en esta máquina. Instalar Docker Desktop habilitaría el diff completo de esquema como verificación adicional; mientras tanto, `migration list` + disciplina de "solo db push" es el contrato.
 
 ## Verificación de tipos
 

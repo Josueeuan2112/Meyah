@@ -1,48 +1,74 @@
+import type { ComponentType } from 'react'
 import { createBrowserRouter } from 'react-router'
+import { Loader2 } from 'lucide-react'
 
 import RootLayout from '@/shared/components/RootLayout'
 import AppLayout from '@/shared/components/AppLayout'
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute'
-import LandingPage from '@/features/landing/pages/LandingPage'
-import RegisterPage from '@/features/auth/pages/RegisterPage'
-import LoginPage from '@/features/auth/pages/LoginPage'
-import WelcomePage from '@/features/auth/pages/WelcomePage'
-import CompanyPage from '@/features/companies/pages/CompanyPage'
-import DashboardPage from '@/features/jobs/pages/DashboardPage'
-import NewJobPage from '@/features/jobs/pages/NewJobPage'
-import EditJobPage from '@/features/jobs/pages/EditJobPage'
-import ProfilePage from '@/features/profile/pages/ProfilePage'
-import JobDetailPage from '@/features/jobs/pages/JobDetailPage'
-import MyApplicationsPage from '@/features/applications/pages/MyApplicationsPage'
-import JobApplicantsPage from '@/features/applications/pages/JobApplicantsPage'
+import RequireRole from '@/features/auth/components/RequireRole'
+
+// Code-splitting por ruta (route.lazy): cada página baja en su propio chunk
+// solo cuando se navega a ella, en vez de un bundle monolítico de >1 MB con
+// Leaflet incluido desde el landing. En navegaciones cliente, React Router
+// mantiene la pantalla actual mientras llega el chunk (sin spinner extra);
+// el fallback de hidratación solo aplica a la carga inicial.
+
+const page = (load: () => Promise<{ default: ComponentType }>) => async () => ({
+  Component: (await load()).default,
+})
+
+const hydrateFallback = (
+  <main className="flex min-h-screen items-center justify-center bg-meyah-crema-50">
+    <Loader2 className="size-8 animate-spin text-meyah-jade-500" />
+  </main>
+)
 
 export const router = createBrowserRouter([
   // ── Bloque A: rutas públicas con Header/Footer ──────────────────────────
   {
     element: <RootLayout />,
+    hydrateFallbackElement: hydrateFallback,
     children: [
-      { path: '/',         element: <LandingPage />  },
-      { path: '/login',    element: <LoginPage />    },
-      { path: '/registro', element: <RegisterPage /> },
+      { path: '/',            lazy: page(() => import('@/features/landing/pages/LandingPage')) },
+      { path: '/login',       lazy: page(() => import('@/features/auth/pages/LoginPage')) },
+      { path: '/registro',    lazy: page(() => import('@/features/auth/pages/RegisterPage')) },
+      { path: '/recuperar',   lazy: page(() => import('@/features/auth/pages/ForgotPasswordPage')) },
+      { path: '/restablecer', lazy: page(() => import('@/features/auth/pages/ResetPasswordPage')) },
     ],
   },
 
   // ── Bloque B: rutas protegidas con shell de app ──────────────────────────
   {
     element: <ProtectedRoute />,
+    hydrateFallbackElement: hydrateFallback,
     children: [
       {
         element: <AppLayout />,
         children: [
-          { path: '/inicio',                         element: <WelcomePage />        },
-          { path: '/mi-empresa',                     element: <CompanyPage />        },
-          { path: '/mi-perfil',                      element: <ProfilePage />        },
-          { path: '/mis-postulaciones',              element: <MyApplicationsPage /> },
-          { path: '/vacante/:id',                    element: <JobDetailPage />      },
-          { path: '/dashboard',                      element: <DashboardPage />      },
-          { path: '/dashboard/nueva-vacante',        element: <NewJobPage />         },
-          { path: '/dashboard/vacante/:id/editar',   element: <EditJobPage />        },
-          { path: '/dashboard/vacante/:id/postulantes', element: <JobApplicantsPage /> },
+          // Compartida por ambos roles
+          { path: '/mi-perfil', lazy: page(() => import('@/features/profile/pages/ProfilePage')) },
+
+          // Solo candidato — un empleador es redirigido a /dashboard
+          {
+            element: <RequireRole role="candidato" />,
+            children: [
+              { path: '/inicio',            lazy: page(() => import('@/features/jobs/pages/FeedPage')) },
+              { path: '/mis-postulaciones', lazy: page(() => import('@/features/applications/pages/MyApplicationsPage')) },
+              { path: '/vacante/:id',       lazy: page(() => import('@/features/jobs/pages/JobDetailPage')) },
+            ],
+          },
+
+          // Solo empleador — un candidato es redirigido a /inicio
+          {
+            element: <RequireRole role="empleador" />,
+            children: [
+              { path: '/mi-empresa',                        lazy: page(() => import('@/features/companies/pages/CompanyPage')) },
+              { path: '/dashboard',                         lazy: page(() => import('@/features/jobs/pages/DashboardPage')) },
+              { path: '/dashboard/nueva-vacante',           lazy: page(() => import('@/features/jobs/pages/NewJobPage')) },
+              { path: '/dashboard/vacante/:id/editar',      lazy: page(() => import('@/features/jobs/pages/EditJobPage')) },
+              { path: '/dashboard/vacante/:id/postulantes', lazy: page(() => import('@/features/applications/pages/JobApplicantsPage')) },
+            ],
+          },
         ],
       },
     ],

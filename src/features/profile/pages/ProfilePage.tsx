@@ -33,6 +33,7 @@ export default function ProfilePage() {
     phone: profile.phone ?? '',
     lat_referencia: profile.lat_referencia,
     lng_referencia: profile.lng_referencia,
+    radio_busqueda_km: profile.radio_busqueda_km,
     is_searchable: profile.is_searchable,
   }
 

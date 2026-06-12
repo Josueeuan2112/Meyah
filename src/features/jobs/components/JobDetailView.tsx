@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Building2, Loader2, MapPin, Wallet } from 'lucide-react'
+import { Building2, Loader2, MapPin, Share2, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -26,7 +26,7 @@ const viewedJobs = new Set<string>()
 
 export default function JobDetailView({ jobId, distanciaM }: JobDetailViewProps) {
   const { profile } = useAuth()
-  const { data: job, isLoading } = useJobDetail(jobId)
+  const { data: job, isLoading, isError } = useJobDetail(jobId)
   const { data: application } = useMyApplicationForJob(jobId)
   const createApplication = useCreateApplication()
 
@@ -45,10 +45,21 @@ export default function JobDetailView({ jobId, distanciaM }: JobDetailViewProps)
     )
   }
 
+  // Error de red ≠ vacante inexistente: antes ambos caían en "no encontrada"
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center px-4 py-20">
+        <p className="text-center text-meyah-tinta-600">
+          No se pudo cargar la vacante. Intenta de nuevo más tarde.
+        </p>
+      </div>
+    )
+  }
+
   if (!job) {
     return (
       <div className="flex items-center justify-center px-4 py-20">
-        <p className="text-center text-meyah-tinta-600">Vacante no encontrada.</p>
+        <p className="text-center text-meyah-tinta-600">Esta vacante ya no está disponible.</p>
       </div>
     )
   }
@@ -61,6 +72,23 @@ export default function JobDetailView({ jobId, distanciaM }: JobDetailViewProps)
     job.estado === 'abierta' &&
     job.expires_at != null &&
     new Date(job.expires_at) > new Date()
+
+  // Compartir: share sheet nativo en móvil (~75% del uso real), copiar enlace
+  // en desktop. La ruta /vacante/:id ya existe; quien abra el link sin sesión
+  // pasa por login y vuelve protegido por los guards.
+  const shareJob = async () => {
+    const url = `${window.location.origin}/vacante/${job.id}`
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: job.titulo, text: `${job.titulo} — ${job.company?.nombre ?? 'Meyah'}`, url })
+      } catch {
+        // El usuario canceló el share sheet: no es un error
+      }
+      return
+    }
+    await navigator.clipboard.writeText(url)
+    toast.success('Enlace copiado')
+  }
 
   const onSubmit = (values: ApplicationSchemaOutput) => {
     createApplication.mutate(
@@ -82,6 +110,13 @@ export default function JobDetailView({ jobId, distanciaM }: JobDetailViewProps)
         <span className="inline-flex items-center rounded-full bg-meyah-jade-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-white">
           {labelCategoria}
         </span>
+        <button
+          type="button"
+          onClick={() => void shareJob()}
+          className="ml-2 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-meyah-jade-700 shadow-xs transition hover:bg-meyah-jade-50"
+        >
+          <Share2 size={12} /> Compartir
+        </button>
         <h2 className="mt-2 text-[28px]">{job.titulo}</h2>
         <p className="mt-2.5 flex items-center gap-1.5 text-[14px] text-meyah-tinta-600">
           <Building2 size={15} />{job.company?.nombre ?? 'Empresa no disponible'}

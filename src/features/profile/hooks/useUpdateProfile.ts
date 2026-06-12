@@ -18,6 +18,7 @@ export function useUpdateProfile() {
           phone: values.phone,
           lat_referencia: values.lat_referencia,
           lng_referencia: values.lng_referencia,
+          radio_busqueda_km: values.radio_busqueda_km,
           is_searchable: values.is_searchable,
         })
         .eq('id', user.id)

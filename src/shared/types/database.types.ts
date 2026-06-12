@@ -76,6 +76,8 @@ export type Database = {
           direccion: string
           id: string
           is_verified: boolean
+          lat: number | null
+          lng: number | null
           logo_url: string | null
           nombre: string
           owner_id: string
@@ -90,6 +92,8 @@ export type Database = {
           direccion: string
           id?: string
           is_verified?: boolean
+          lat?: number | null
+          lng?: number | null
           logo_url?: string | null
           nombre: string
           owner_id: string
@@ -104,6 +108,8 @@ export type Database = {
           direccion?: string
           id?: string
           is_verified?: boolean
+          lat?: number | null
+          lng?: number | null
           logo_url?: string | null
           nombre?: string
           owner_id?: string
@@ -201,40 +207,49 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          categorias_interes: string[] | null
           created_at: string
           deleted_at: string | null
+          disponibilidad: Database["public"]["Enums"]["job_schedule"] | null
           id: string
           is_searchable: boolean
           lat_referencia: number | null
           lng_referencia: number | null
           nombre: string
           phone: string | null
+          radio_busqueda_km: number | null
           tipo: Database["public"]["Enums"]["user_type"]
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          categorias_interes?: string[] | null
           created_at?: string
           deleted_at?: string | null
+          disponibilidad?: Database["public"]["Enums"]["job_schedule"] | null
           id: string
           is_searchable?: boolean
           lat_referencia?: number | null
           lng_referencia?: number | null
           nombre: string
           phone?: string | null
+          radio_busqueda_km?: number | null
           tipo: Database["public"]["Enums"]["user_type"]
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          categorias_interes?: string[] | null
           created_at?: string
           deleted_at?: string | null
+          disponibilidad?: Database["public"]["Enums"]["job_schedule"] | null
           id?: string
           is_searchable?: boolean
           lat_referencia?: number | null
           lng_referencia?: number | null
           nombre?: string
           phone?: string | null
+          radio_busqueda_km?: number | null
           tipo?: Database["public"]["Enums"]["user_type"]
           updated_at?: string
         }
@@ -437,6 +452,10 @@ export type Database = {
             }
             Returns: string
           }
+      candidates_near_count: {
+        Args: { p_lat: number; p_lng: number; p_max_m?: number }
+        Returns: number
+      }
       current_user_applied_to_job: {
         Args: { p_job_id: string }
         Returns: boolean
@@ -592,7 +611,7 @@ export type Database = {
         }[]
       }
       jobs_near: {
-        Args: { p_lat?: number; p_lng?: number }
+        Args: { p_lat?: number; p_lng?: number; p_max_m?: number }
         Returns: {
           categoria: string
           company_nombre: string
@@ -653,6 +672,7 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      soft_delete_job: { Args: { p_job_id: string }; Returns: boolean }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown

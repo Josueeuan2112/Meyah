@@ -11,9 +11,13 @@ export const profileSchema = z
       .string()
       .trim()
       .min(10, 'Ingresa un teléfono de 10 dígitos.')
-      .max(20, 'Máximo 20 caracteres'),
+      .max(20, 'Máximo 20 caracteres')
+      // Mismo criterio que registerSchema: sin regex pasaba texto arbitrario
+      .regex(/^\+?[\d\s()-]+$/, 'El teléfono solo puede tener números, espacios y guiones.'),
     lat_referencia: z.number().min(-90).max(90).nullable(),
     lng_referencia: z.number().min(-180).max(180).nullable(),
+    // Mismo rango que el registro (y que el CHECK profiles_radio_busqueda_km)
+    radio_busqueda_km: z.number().int().min(1).max(20).nullable(),
     is_searchable: z.boolean(),
   })
   .refine(

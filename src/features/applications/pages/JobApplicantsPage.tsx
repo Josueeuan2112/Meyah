@@ -1,10 +1,12 @@
+import { useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { ArrowLeft, MapPin, Phone } from 'lucide-react'
+import { ArrowLeft, MapPin, Phone, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useJobDetail } from '@/features/jobs/hooks/useJobDetail'
 import { useJobApplicants } from '@/features/applications/hooks/useJobApplicants'
 import { useUpdateApplicationStatus } from '@/features/applications/hooks/useUpdateApplicationStatus'
+import { useMarkApplicationsViewed } from '@/features/applications/hooks/useMarkApplicationsViewed'
 import { APPLICATION_STATUS_BADGE_CLASS, APPLICATION_STATUS_LABEL } from '@/features/applications/constants'
 import { formatDistance } from '@/shared/lib/formatDistance'
 import { Button } from '@/shared/ui/button'
@@ -25,6 +27,18 @@ export default function JobApplicantsPage() {
   const { data: job, isLoading: jobLoading } = useJobDetail(id)
   const { data: applicants, isLoading: applicantsLoading, isError } = useJobApplicants(id)
   const updateStatus = useUpdateApplicationStatus(id ?? '')
+  const markViewed = useMarkApplicationsViewed(id)
+
+  // Al abrir la lista, las 'pendiente' pasan a 'vista' (una vez por montaje):
+  // el candidato ve en sus postulaciones que el empleador ya las abrió
+  const markedRef = useRef(false)
+  const markViewedMutate = markViewed.mutate
+  useEffect(() => {
+    if (markedRef.current) return
+    if (!applicants?.some(a => a.estado === 'pendiente')) return
+    markedRef.current = true
+    markViewedMutate()
+  }, [applicants, markViewedMutate])
 
   const handleAceptar = (appId: string) => {
     updateStatus.mutate(
@@ -87,7 +101,9 @@ export default function JobApplicantsPage() {
   }
 
   const apps = applicants ?? []
-  const pendientes = apps.filter(a => a.estado === 'pendiente').length
+  // "Sin responder" = pendiente o vista (la vista automática al abrir esta
+  // página volvería el contador de 'pendiente' siempre 0 y perdería sentido)
+  const sinResponder = apps.filter(a => a.estado === 'pendiente' || a.estado === 'vista').length
 
   return (
     <div className="mx-auto w-full max-w-230 px-4 py-8 sm:px-6">
@@ -103,13 +119,19 @@ export default function JobApplicantsPage() {
         <span className="eyebrow">Postulantes</span>
         <h1 className="mt-1 text-[clamp(26px,4vw,34px)]">{job.titulo}</h1>
         <p className="mt-2 text-[14.5px] text-meyah-tinta-600">
-          {apps.length} postulantes · {pendientes} pendientes · del más cercano
+          {apps.length} postulantes · {sinResponder} sin responder · del más cercano
         </p>
 
         {/* Lista */}
         {apps.length === 0 ? (
           <div className="mt-7 flex flex-col items-center gap-3 rounded-panel border border-meyah-border-soft bg-white px-6 py-16 text-center">
-            <p className="text-[14.5px] text-meyah-tinta-600">Aún no hay postulantes para esta vacante.</p>
+            <div className="grid h-15 w-15 place-items-center rounded-panel bg-meyah-crema-100 text-meyah-tinta-400">
+              <Users size={26} />
+            </div>
+            <h3 className="text-[20px]">Aún no hay postulantes</h3>
+            <p className="max-w-70 text-[13.5px] text-meyah-tinta-600">
+              Cuando alguien se postule a esta vacante lo verás aquí, ordenado por cercanía.
+            </p>
           </div>
         ) : (
           <div className="mt-7 flex flex-col gap-4">

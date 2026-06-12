@@ -20,7 +20,7 @@ function categoryPin(categoria: string, active = false) {
     className: '',
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};border:${active ? 3 : 2.5}px solid var(--color-meyah-jade-500);box-shadow:0 ${active ? 8 : 4}px ${active ? 18 : 12}px -3px rgba(0,0,0,${active ? 0.38 : 0.28});display:grid;place-items:center;color:${active ? '#fff' : 'var(--color-meyah-jade-500)'};">${svg}</div>`,
+    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};border:${active ? 3 : 2.5}px solid var(--color-meyah-jade-500);box-shadow:0 ${active ? 8 : 4}px ${active ? 18 : 12}px -3px rgba(0,0,0,${active ? 0.38 : 0.28}),inset 0 2px 3px rgba(255,255,255,${active ? 0.25 : 0.85}),inset 0 -2px 4px rgba(0,0,0,0.07);display:grid;place-items:center;color:${active ? '#fff' : 'var(--color-meyah-jade-500)'};">${svg}</div>`,
   })
 }
 
@@ -33,10 +33,16 @@ const userPin = L.divIcon({
 
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap()
+  // Firma por VALOR de los puntos: `points` es un array nuevo en cada render
+  // (cada hover re-renderiza el feed), y con la referencia como dependencia
+  // el efecto corría siempre — el mapa se re-encuadraba y cancelaba el
+  // pan/zoom del usuario al pasar el mouse por las tarjetas.
+  const signature = points.map(p => `${p[0]},${p[1]}`).join(';')
   useEffect(() => {
     if (points.length === 0) return
     map.fitBounds(L.latLngBounds(points), { padding: [56, 56], maxZoom: 15 })
-  }, [points, map])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- points representado por signature
+  }, [signature, map])
   return null
 }
 
