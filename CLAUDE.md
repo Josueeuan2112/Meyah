@@ -176,14 +176,16 @@ features/<nombre>/
 
 ### Checklist manual de Auth en el dashboard (antes de lanzar)
 
-Pasos que NO se pueden hacer por CLI/migración — se hacen una vez en el dashboard de Supabase y se palomean aquí:
+Estado REAL verificado contra la Management API el 2026-06-12 (el checklist
+anterior estaba palomeado pero el servidor tenía otra cosa — verificar
+siempre con `GET /v1/projects/<ref>/config/auth`, no de memoria):
 
-- [bien ] **Activar "Confirm email"** (Auth → Sign In / Up). El código ya lo soporta: `emailRedirectTo` en signUp, reenvío de confirmación en registro y login, y manejo del error "Email not confirmed". Se prende al FINAL de la etapa para no frenar pruebas de dev.
-- [bien ] **Registrar Redirect URLs** (Auth → URL Configuration): `http://localhost:5173/login`, `http://localhost:5173/restablecer` y sus equivalentes del dominio de producción. Sin esto, los enlaces de confirmación y de reset rebotan.
-- [ bien] **Minimum password length = 8** (Auth → Sign In / Up → Passwords), alineado con el mínimo de Zod (`registerSchema`/`resetPasswordSchema`). Cliente y servidor deben pedir lo mismo.
-- [bien ] **Leaked password protection ON** (mismo panel; integra HaveIBeenPwned). Toggle gratis que rechaza contraseñas ya filtradas en brechas.
-- [bien ] **Revisar Auth → Rate Limits**: defaults razonables, pero con verificación + reset el límite de envío de emails se usará más; conocer los valores antes de lanzar.
-- [ bien] **Usuarios no confirmados**: decisión MVP = se aceptan (no pueden iniciar sesión; daño mínimo). Si crecen, configurar limpieza de cuentas sin confirmar tras X días (job o función programada) — anotado, no implementado.
+- [TEMPORAL OFF] **"Confirm email"** — apagado a propósito para la beta con amigos (`mailer_autoconfirm: true`): sin correos de confirmación no estorba el límite de 2 emails/hora del servicio integrado. **Reactivar antes del lanzamiento real** (dashboard Auth → Sign In / Up, o PATCH `mailer_autoconfirm: false`). El código ya soporta ambos modos.
+- [PARCIAL] **Redirect URLs** — registradas las de localhost (`/login`, `/restablecer`) vía API. **FALTAN las del dominio de producción** (no se conocía el dominio de Vercel al configurarlo). También cambiar `site_url` (sigue en `http://localhost:3000`).
+- [x] **Minimum password length = 8** — aplicado vía API (estaba en 6 aunque el checklist decía lo contrario), alineado con Zod.
+- [ ] **Leaked password protection** — sigue OFF (el checklist decía ON). Se deja apagado durante la beta (rechazaría contraseñas comunes de prueba a media demo); **prender antes del lanzamiento real**.
+- [x] **Rate Limits revisados** — `email_sent: 2/hora` (tope fijo del SMTP integrado, NO se puede subir sin SMTP propio: ese es el motivo real de apagar la confirmación en la beta), `sign_in_sign_ups: 30/5min/IP` (suficiente), `token_refresh: 150/5min`. Para volumen real: configurar SMTP propio.
+- [ ] **Usuarios no confirmados**: decisión MVP = se aceptan. Con la confirmación apagada en beta ni aplica; re-evaluar al reactivarla.
 
 ## 📐 Decisiones de arquitectura
 
