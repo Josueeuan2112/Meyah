@@ -36,7 +36,7 @@ export default function JobDetailView({ jobId, distanciaM }: JobDetailViewProps)
     if (!jobId || profile?.tipo !== 'candidato') return
     if (viewedJobs.has(jobId)) return
     viewedJobs.add(jobId)
-    void supabase.rpc('increment_job_views', { p_job_id: jobId })
+    void supabase.rpc('record_job_view', { p_job_id: jobId })
   }, [jobId, profile?.tipo])
 
   if (isLoading) {

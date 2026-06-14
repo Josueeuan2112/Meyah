@@ -196,6 +196,35 @@ export type Database = {
           },
         ]
       }
+      job_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          job_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          job_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          job_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_events_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           categoria: string
@@ -683,6 +712,24 @@ export type Database = {
           }
         | { Args: { schema_name: string; table_name: string }; Returns: string }
         | { Args: { table_name: string }; Returns: string }
+      employer_analytics: {
+        Args: never
+        Returns: {
+          applications_by_status: Json
+          applications_total: number
+          job_id: string
+          job_titulo: string
+          views_total: number
+        }[]
+      }
+      employer_daily_stats: {
+        Args: { p_days?: number }
+        Returns: {
+          applications: number
+          day: string
+          views: number
+        }[]
+      }
       enablelongtransactions: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       geometry: { Args: { "": string }; Returns: unknown }
@@ -880,6 +927,7 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      record_job_view: { Args: { p_job_id: string }; Returns: undefined }
       soft_delete_job: { Args: { p_job_id: string }; Returns: boolean }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
