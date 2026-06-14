@@ -176,16 +176,15 @@ features/<nombre>/
 
 ### Checklist manual de Auth en el dashboard (antes de lanzar)
 
-Estado REAL verificado contra la Management API el 2026-06-12 (el checklist
-anterior estaba palomeado pero el servidor tenía otra cosa — verificar
-siempre con `GET /v1/projects/<ref>/config/auth`, no de memoria):
+Estado verificado contra la Management API el 2026-06-13 (verificar siempre
+con `GET /v1/projects/<ref>/config/auth`, no de memoria):
 
-- [TEMPORAL OFF] **"Confirm email"** — apagado a propósito para la beta con amigos (`mailer_autoconfirm: true`): sin correos de confirmación no estorba el límite de 2 emails/hora del servicio integrado. **Reactivar antes del lanzamiento real** (dashboard Auth → Sign In / Up, o PATCH `mailer_autoconfirm: false`). El código ya soporta ambos modos.
+- [x] **"Confirm email"** — activado (`mailer_autoconfirm: false`). El código soporta `emailRedirectTo` en signUp, reenvío de confirmación en registro y login, y manejo del error "Email not confirmed".
 - [PARCIAL] **Redirect URLs** — registradas las de localhost (`/login`, `/restablecer`) vía API. **FALTAN las del dominio de producción** (no se conocía el dominio de Vercel al configurarlo). También cambiar `site_url` (sigue en `http://localhost:3000`).
-- [x] **Minimum password length = 8** — aplicado vía API (estaba en 6 aunque el checklist decía lo contrario), alineado con Zod.
-- [ ] **Leaked password protection** — sigue OFF (el checklist decía ON). Se deja apagado durante la beta (rechazaría contraseñas comunes de prueba a media demo); **prender antes del lanzamiento real**.
-- [x] **Rate Limits revisados** — `email_sent: 2/hora` (tope fijo del SMTP integrado, NO se puede subir sin SMTP propio: ese es el motivo real de apagar la confirmación en la beta), `sign_in_sign_ups: 30/5min/IP` (suficiente), `token_refresh: 150/5min`. Para volumen real: configurar SMTP propio.
-- [ ] **Usuarios no confirmados**: decisión MVP = se aceptan. Con la confirmación apagada en beta ni aplica; re-evaluar al reactivarla.
+- [x] **Minimum password length = 8** — aplicado vía API, alineado con Zod.
+- [ ] **Leaked password protection** — sigue OFF (`password_hibp_enabled: false`). **Prender antes del lanzamiento real** (dashboard Auth → Sign In / Up).
+- [x] **Rate Limits revisados** — `email_sent: 2/hora` (tope fijo del SMTP integrado; para volumen real hay que configurar SMTP propio), `sign_in_sign_ups: 30/5min/IP` (suficiente), `token_refresh: 150/5min`.
+- [ ] **Usuarios no confirmados**: decisión MVP = se aceptan (no pueden iniciar sesión hasta confirmar; daño mínimo). Si crecen, configurar limpieza de cuentas sin confirmar tras X días (job o función programada) — anotado, no implementado.
 
 ## 📐 Decisiones de arquitectura
 

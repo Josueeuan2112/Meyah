@@ -274,10 +274,6 @@ export default function RegisterPage() {
                 />
               </button>
 
-              {/* TEMPORAL: registro de empleador oculto durante las pruebas con
-                  candidatos reales (no queremos empresas de prueba). La lógica
-                  del wizard de empleador sigue intacta — para reactivarlo solo
-                  hay que descomentar este bloque.
               <button
                 type="button"
                 onClick={() => pickRole('empleador')}
@@ -299,7 +295,6 @@ export default function RegisterPage() {
                   className="flex-none text-meyah-tinta-400 transition group-hover:translate-x-0.5 group-hover:text-meyah-terracota-500"
                 />
               </button>
-              */}
             </div>
 
             <div className="mt-[26px] flex flex-col lg:mt-auto lg:pt-[30px]">
