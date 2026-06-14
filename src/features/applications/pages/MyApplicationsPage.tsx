@@ -1,9 +1,49 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
-import { ArrowRight, FileText } from 'lucide-react'
+import { ArrowRight, FileText, Star } from 'lucide-react'
 
 import { useMyApplications } from '@/features/applications/hooks/useMyApplications'
+import type { MyApplication } from '@/features/applications/hooks/useMyApplications'
 import { ApplicationCard } from '@/features/applications/components/ApplicationCard'
+import { ReviewForm } from '@/features/reviews/components/ReviewForm'
 import { Button } from '@/shared/ui/button'
+
+/** Wraps an ApplicationCard with an expandable review section for finalized applications. */
+function ApplicationWithReview({ app, index }: { app: MyApplication; index: number }) {
+  const [showReview, setShowReview] = useState(false)
+  const canReview = app.estado === 'aceptada' || app.estado === 'rechazada'
+
+  return (
+    <div
+      style={{ animation: 'rise .5s cubic-bezier(.2,.7,.3,1) forwards', animationDelay: `${index * 40}ms` }}
+    >
+      <ApplicationCard app={app} />
+
+      {canReview && (
+        <div className="mt-1.5 rounded-card border border-meyah-border-soft bg-white px-7 py-4">
+          <button
+            type="button"
+            onClick={() => setShowReview((v) => !v)}
+            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-meyah-jade-700 transition-colors hover:text-meyah-jade-900"
+          >
+            <Star size={14} />
+            Calificar experiencia
+          </button>
+
+          {showReview && (
+            <div className="mt-3 border-t border-meyah-border-soft pt-3">
+              <ReviewForm
+                applicationId={app.id}
+                companyId={app.job.company_id}
+                onSuccess={() => setShowReview(false)}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function MyApplicationsPage() {
   const { data, isLoading, isError } = useMyApplications()
@@ -69,17 +109,12 @@ export default function MyApplicationsPage() {
           <>
             <div className="mt-8.5 flex flex-col gap-3.5">
               {apps.map((app, i) => (
-                <div
-                  key={app.id}
-                  style={{ animation: 'rise .5s cubic-bezier(.2,.7,.3,1) forwards', animationDelay: `${i * 40}ms` }}
-                >
-                  <ApplicationCard app={app} />
-                </div>
+                <ApplicationWithReview key={app.id} app={app} index={i} />
               ))}
             </div>
 
             <div className="mt-8.5 flex flex-wrap items-center justify-between gap-3.5 rounded-panel bg-meyah-jade-50 p-6.5">
-              <p className="font-display text-[19px] text-meyah-jade-900">¿Buscas más opciones cerca?</p>
+              <p className="font-display text-[19px] text-meyah-jade-900">¿Buscas mas opciones cerca?</p>
               <Button asChild>
                 <Link to="/inicio">Explorar vacantes <ArrowRight /></Link>
               </Button>

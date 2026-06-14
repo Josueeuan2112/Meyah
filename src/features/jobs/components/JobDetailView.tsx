@@ -4,6 +4,7 @@ import { Building2, Clock, Loader2, MapPin, Share2, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 
 import VerifiedBadge from '@/features/companies/components/VerifiedBadge'
+import { CompanyRatingBadge } from '@/features/reviews/components/CompanyRatingBadge'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useJobDetail } from '@/features/jobs/hooks/useJobDetail'
 import { useMyApplicationForJob } from '@/features/applications/hooks/useMyApplicationForJob'
@@ -124,6 +125,7 @@ export default function JobDetailView({ jobId, distanciaM }: JobDetailViewProps)
         <p className="mt-2.5 flex items-center gap-1.5 text-[14px] text-meyah-tinta-600">
           <Building2 size={15} />{job.company?.nombre ?? 'Empresa no disponible'}
           <VerifiedBadge verified={job.company?.is_verified ?? false} />
+          {job.company_id && <CompanyRatingBadge companyId={job.company_id} />}
         </p>
       </div>
 

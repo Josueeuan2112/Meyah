@@ -7,7 +7,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 function buildMyApplicationsQuery(userId: string) {
   return supabase
     .from('applications')
-    .select('id, estado, created_at, job:jobs(id, titulo, slug, estado, categoria, salario_min, salario_max, company:companies(nombre))')
+    .select('id, estado, created_at, job:jobs(id, titulo, slug, estado, categoria, salario_min, salario_max, company_id, company:companies(nombre))')
     .eq('candidato_id', userId)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
