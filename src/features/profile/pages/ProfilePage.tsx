@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useUpdateProfile } from '@/features/profile/hooks/useUpdateProfile'
 import ProfileForm from '@/features/profile/components/ProfileForm'
+import CVUpload from '@/features/profile/components/CVUpload'
 import type { ProfileSchemaOutput } from '@/features/profile/schemas/profile.schema'
 
 export default function ProfilePage() {
@@ -60,6 +61,12 @@ export default function ProfilePage() {
           isSubmitting={updateProfile.isPending}
           roleLabel={profile.tipo === 'empleador' ? 'Empleador' : 'Candidato'}
         />
+
+        {profile.tipo === 'candidato' && (
+          <div className="mt-6">
+            <CVUpload cvPath={profile.cv_path} />
+          </div>
+        )}
       </div>
     </div>
   )

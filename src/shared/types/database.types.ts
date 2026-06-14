@@ -368,6 +368,7 @@ export type Database = {
           avatar_url: string | null
           categorias_interes: string[] | null
           created_at: string
+          cv_path: string | null
           deleted_at: string | null
           disponibilidad: Database["public"]["Enums"]["job_schedule"] | null
           email_opt_out: boolean
@@ -385,6 +386,7 @@ export type Database = {
           avatar_url?: string | null
           categorias_interes?: string[] | null
           created_at?: string
+          cv_path?: string | null
           deleted_at?: string | null
           disponibilidad?: Database["public"]["Enums"]["job_schedule"] | null
           email_opt_out?: boolean
@@ -402,6 +404,7 @@ export type Database = {
           avatar_url?: string | null
           categorias_interes?: string[] | null
           created_at?: string
+          cv_path?: string | null
           deleted_at?: string | null
           disponibilidad?: Database["public"]["Enums"]["job_schedule"] | null
           email_opt_out?: boolean
@@ -766,6 +769,7 @@ export type Database = {
           candidato_nombre: string
           candidato_phone: string
           created_at: string
+          cv_path: string
           distancia_m: number
           estado: Database["public"]["Enums"]["application_status"]
           id: string

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { ArrowLeft, MapPin, MessageSquare, Phone, Users } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowLeft, FileText, MapPin, MessageSquare, Phone, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useJobDetail } from '@/features/jobs/hooks/useJobDetail'
@@ -8,6 +9,7 @@ import { useJobApplicants } from '@/features/applications/hooks/useJobApplicants
 import { useUpdateApplicationStatus } from '@/features/applications/hooks/useUpdateApplicationStatus'
 import { useMarkApplicationsViewed } from '@/features/applications/hooks/useMarkApplicationsViewed'
 import { useCreateConversation } from '@/features/chat/hooks/useCreateConversation'
+import { getSignedCVUrl } from '@/features/profile/hooks/useCV'
 import { APPLICATION_STATUS_BADGE_CLASS, APPLICATION_STATUS_LABEL } from '@/features/applications/constants'
 import { formatDistance } from '@/shared/lib/formatDistance'
 import { Button } from '@/shared/ui/button'
@@ -24,6 +26,14 @@ function getIniciales(nombre: string): string {
 export default function JobApplicantsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [loadingCvId, setLoadingCvId] = useState<string | null>(null)
+
+  const handleViewCV = async (cvPath: string, appId: string) => {
+    setLoadingCvId(appId)
+    const url = await getSignedCVUrl(cvPath)
+    setLoadingCvId(null)
+    if (url) window.open(url, '_blank')
+  }
 
   const { data: job, isLoading: jobLoading } = useJobDetail(id)
   const { data: applicants, isLoading: applicantsLoading, isError } = useJobApplicants(id)
@@ -208,6 +218,17 @@ export default function JobApplicantsPage() {
                     <Button variant="outline" size="sm" onClick={() => handleRechazar(app.id)} disabled={app.estado === 'rechazada' || isUpdating}>
                       Rechazar
                     </Button>
+                    {app.cv_path && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewCV(app.cv_path!, app.id)}
+                        disabled={loadingCvId === app.id}
+                      >
+                        <FileText size={14} className="mr-1.5" />
+                        {loadingCvId === app.id ? 'Cargando…' : 'Ver CV'}
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
