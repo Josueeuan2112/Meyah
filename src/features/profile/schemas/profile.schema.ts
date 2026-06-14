@@ -19,6 +19,7 @@ export const profileSchema = z
     // Mismo rango que el registro (y que el CHECK profiles_radio_busqueda_km)
     radio_busqueda_km: z.number().int().min(1).max(20).nullable(),
     is_searchable: z.boolean(),
+    email_opt_out: z.boolean(),
   })
   .refine(
     d => (d.lat_referencia === null) === (d.lng_referencia === null),

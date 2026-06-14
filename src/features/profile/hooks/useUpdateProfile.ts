@@ -20,6 +20,7 @@ export function useUpdateProfile() {
           lng_referencia: values.lng_referencia,
           radio_busqueda_km: values.radio_busqueda_km,
           is_searchable: values.is_searchable,
+          email_opt_out: values.email_opt_out,
         })
         .eq('id', user.id)
 

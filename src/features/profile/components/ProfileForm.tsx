@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { MapPin } from 'lucide-react'
+import { MapPin, BellOff } from 'lucide-react'
 
 import LocationPicker from '@/features/jobs/components/LocationPicker'
 import { profileSchema } from '@/features/profile/schemas/profile.schema'
@@ -89,6 +89,21 @@ export default function ProfileForm({ defaultValues, onSubmit, isSubmitting, rol
                 <span className="text-[13.5px] text-meyah-tinta-600">Quiero aparecer en búsquedas de empleadores cercanos</span>
               </label>
             )}
+            {/* Email notifications opt-out */}
+            <div className="mt-2 rounded-card border border-meyah-border-soft bg-meyah-crema-50 p-4">
+              <div className="flex items-start gap-3">
+                <BellOff size={18} className="mt-0.5 flex-none text-meyah-tinta-400" />
+                <div>
+                  <label className="flex cursor-pointer items-center gap-2.5">
+                    <input type="checkbox" {...register('email_opt_out')} className="h-4.5 w-4.5 flex-none accent-meyah-terracota-500" />
+                    <span className="text-[13.5px] font-medium text-meyah-tinta-900">No quiero recibir notificaciones por correo</span>
+                  </label>
+                  <p className="mt-1.5 text-[12px] text-meyah-tinta-400">
+                    Si desactivas las notificaciones, no recibirás avisos cuando alguien se postule a tus vacantes o cuando cambien el estado de tus postulaciones.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>

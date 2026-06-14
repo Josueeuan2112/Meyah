@@ -35,6 +35,7 @@ export default function ProfilePage() {
     lng_referencia: profile.lng_referencia,
     radio_busqueda_km: profile.radio_busqueda_km,
     is_searchable: profile.is_searchable,
+    email_opt_out: profile.email_opt_out,
   }
 
   const onSubmit = (values: ProfileSchemaOutput) => {
