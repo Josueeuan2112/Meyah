@@ -250,3 +250,31 @@ Algunas tablas tienen campos como `is_featured`, `views_count`, `is_verified`, `
 - **v4+:** expansión a otras ciudades de Yucatán, suscripciones empleadores.
 
 **REGLA CRÍTICA:** Hasta no terminar y desplegar v1 completa en producción, NO se trabaja en features de v2 o posteriores. Esta regla NO admite excepciones, ni siquiera "una cosita chiquita". Si surge una idea brillante para v2, se anota como issue en GitHub y se pospone. Disciplina sobre entusiasmo.
+
+## Subagentes de proyecto (`.claude/agents/`)
+
+El proyecto tiene 7 agentes especializados. Se invocan con `@agent-name` o mediante la herramienta Agent con `subagent_type`.
+
+| Agente | Rol | Cuándo usarlo |
+|--------|-----|---------------|
+| `meyah-frontend` | UI, componentes, hooks, formularios | Tareas de frontend |
+| `supabase-backend` | Migraciones, RPC, RLS, PostGIS | Tareas de base de datos |
+| `code-reviewer` | Revisión rigurosa (solo lectura) | **Proactivamente** después de cada cambio |
+| `security-reviewer` | Auditoría de seguridad (solo lectura) | Antes de mergear cambios en auth/RLS/datos |
+| `product-manager` | Requisitos y scope (solo lectura) | Al arrancar una feature grande |
+| `growth-advisor` | Oportunidades de crecimiento (solo lectura) | Al cerrar una feature |
+| `predeploy-checklist` | Verificación pre-deploy (solo lectura) | Antes de cada deploy |
+
+### Flujo recomendado para features grandes
+
+Este flujo NO es un pipeline forzado — es una recomendación. Adaptar según el tamaño y tipo de tarea.
+
+1. **PM** → `product-manager`: definir problema, scope MVP, out-of-scope (YAGNI).
+2. **Backend** → `supabase-backend`: migraciones, RPC, policies.
+3. **Frontend** → `meyah-frontend`: UI, hooks, integración.
+4. **Review** → `code-reviewer`: verificación de tipos, checklist de puntos ciegos.
+5. **Security** → `security-reviewer`: si la feature toca auth, RLS, o datos de usuario.
+6. **Growth** → `growth-advisor`: análisis de oportunidades post-implementación.
+7. **Deploy** → `predeploy-checklist`: verificación final antes de desplegar.
+
+Para tareas pequeñas (bugfix, ajuste de UI), los pasos 1, 5 y 6 suelen no aplicar.

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Building2, Loader2, MapPin, Share2, Wallet } from 'lucide-react'
+import { Building2, Clock, Loader2, MapPin, Share2, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -9,7 +9,7 @@ import { useCreateApplication } from '@/features/applications/hooks/useCreateApp
 import ApplyForm from '@/features/applications/components/ApplyForm'
 import { APPLICATION_STATUS_LABEL } from '@/features/applications/constants'
 import type { ApplicationSchemaOutput } from '@/features/applications/schemas/application.schema'
-import { ICON_BY_CATEGORY, JOB_CATEGORIES } from '@/features/jobs/schemas/categories'
+import { ICON_BY_CATEGORY, JOB_CATEGORIES, JOB_SCHEDULES } from '@/features/jobs/schemas/categories'
 import type { JobCategoryValue } from '@/features/jobs/schemas/categories'
 import { formatDistance } from '@/shared/lib/formatDistance'
 import { formatSalary } from '@/shared/lib/formatSalary'
@@ -65,6 +65,7 @@ export default function JobDetailView({ jobId, distanciaM }: JobDetailViewProps)
   }
 
   const labelCategoria = JOB_CATEGORIES.find(c => c.value === job.categoria)?.label ?? job.categoria
+  const labelJornada = JOB_SCHEDULES.find(s => s.value === job.jornada)?.label ?? job.jornada
   const Icon = ICON_BY_CATEGORY[job.categoria as JobCategoryValue] ?? ICON_BY_CATEGORY.otro
   const dist = formatDistance(distanciaM ?? null)
 
@@ -130,6 +131,11 @@ export default function JobDetailView({ jobId, distanciaM }: JobDetailViewProps)
             <Wallet size={18} className="text-meyah-jade-600" />
             <b className="block text-[14px] text-meyah-tinta-900">{formatSalary(job.salario_min, job.salario_max)}</b>
             <span className="text-[11.5px] text-meyah-tinta-400">al mes</span>
+          </div>
+          <div className="flex flex-col gap-2 rounded-field border border-meyah-border-soft bg-white p-3.5">
+            <Clock size={18} className="text-meyah-jade-600" />
+            <b className="block text-[14px] text-meyah-tinta-900">{labelJornada}</b>
+            <span className="text-[11.5px] text-meyah-tinta-400">jornada</span>
           </div>
           {dist && (
             <div className="flex flex-col gap-2 rounded-field border border-meyah-border-soft bg-white p-3.5">

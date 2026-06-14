@@ -1,44 +1,31 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { MapPin, Search, X, Map as MapIcon, List } from 'lucide-react'
+import { MapPin, Search, X, Map as MapIcon, List, SlidersHorizontal } from 'lucide-react'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useNearbyJobs } from '@/features/jobs/hooks/useNearbyJobs'
+import { useJobFilters } from '@/features/jobs/hooks/useJobFilters'
 import NearbyJobCard from '@/features/jobs/components/NearbyJobCard'
 import FeedMap from '@/features/jobs/components/FeedMap'
 import JobSheet from '@/features/jobs/components/JobSheet'
+import FilterDrawer from '@/features/jobs/components/FilterDrawer'
 import { JOB_CATEGORIES, ICON_BY_CATEGORY } from '@/features/jobs/schemas/categories'
-import type { JobCategoryValue } from '@/features/jobs/schemas/categories'
 import { Button } from '@/shared/ui/button'
 
 export default function FeedPage() {
   const { profile } = useAuth()
   const { data, isPending, isError } = useNearbyJobs()
 
-  const [search, setSearch] = useState('')
-  const [category, setCategory] = useState<JobCategoryValue | 'todas'>('todas')
+  const filters = useJobFilters()
+
   const [selected, setSelected] = useState<{ id: string; distanciaM: number | null } | null>(null)
   const [hoveredJobId, setHoveredJobId] = useState<string | null>(null)
   const [showMap, setShowMap] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
 
   const hasLocation = profile?.lat_referencia != null
 
-  const filtered = (data ?? []).filter(job => {
-    const query = search.trim().toLowerCase()
-    const matchesSearch =
-      query === '' ||
-      job.titulo.toLowerCase().includes(query) ||
-      job.company_nombre.toLowerCase().includes(query)
-    const matchesCategory = category === 'todas' || job.categoria === category
-    return matchesSearch && matchesCategory
-  })
-
-  const hasFilters = search.trim() !== '' || category !== 'todas'
-
-  const clearFilters = () => {
-    setSearch('')
-    setCategory('todas')
-  }
+  const filtered = filters.filterJobs(data ?? [])
 
   return (
     <div className="relative mx-auto max-w-700 lg:grid lg:grid-cols-[minmax(420px,0.92fr)_1.08fr]">
@@ -55,49 +42,63 @@ export default function FeedPage() {
             </span>
           </div>
 
-          {/* Buscador */}
-          <div className="mb-3.5 flex items-center gap-2.75 rounded-full border border-meyah-border bg-white px-4.5 py-3 shadow-sm focus-within:border-meyah-jade-500 focus-within:ring-[3px] focus-within:ring-meyah-jade-500/15">
-            <Search size={19} className="flex-none text-meyah-tinta-400" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Busca por puesto o empresa…"
-              className="min-w-0 flex-1 bg-transparent text-[15px] text-meyah-tinta-900 outline-none placeholder:text-meyah-tinta-400"
-            />
-            {search !== '' && (
-              <button
-                type="button"
-                onClick={() => setSearch('')}
-                aria-label="Limpiar búsqueda"
-                className="grid h-6.5 w-6.5 flex-none place-items-center rounded-full bg-meyah-crema-100 text-meyah-tinta-600 hover:bg-meyah-border"
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-
-          {/* Categorías */}
-          <div className="flex gap-2.5 overflow-x-auto pb-2 pt-1">
+          {/* Buscador + botón filtros */}
+          <div className="mb-3.5 flex gap-2.5">
+            <div className="flex min-w-0 flex-1 items-center gap-2.75 rounded-full border border-meyah-border bg-white px-4.5 py-3 shadow-sm focus-within:border-meyah-jade-500 focus-within:ring-[3px] focus-within:ring-meyah-jade-500/15">
+              <Search size={19} className="flex-none text-meyah-tinta-400" />
+              <input
+                value={filters.search}
+                onChange={e => filters.setSearch(e.target.value)}
+                placeholder="Busca por puesto o empresa…"
+                className="min-w-0 flex-1 bg-transparent text-[15px] text-meyah-tinta-900 outline-none placeholder:text-meyah-tinta-400"
+              />
+              {filters.search !== '' && (
+                <button
+                  type="button"
+                  onClick={() => filters.setSearch('')}
+                  aria-label="Limpiar búsqueda"
+                  className="grid h-6.5 w-6.5 flex-none place-items-center rounded-full bg-meyah-crema-100 text-meyah-tinta-600 hover:bg-meyah-border"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
             <button
               type="button"
-              onClick={() => setCategory('todas')}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-[13px] font-medium transition ${
-                category === 'todas'
-                  ? 'border-meyah-jade-500 bg-meyah-jade-50 text-meyah-jade-900'
-                  : 'border-meyah-border bg-white text-meyah-tinta-600 hover:border-meyah-jade-500/40'
-              }`}
+              onClick={() => setShowFilters(true)}
+              aria-label="Abrir filtros"
+              className="relative grid h-[50px] w-[50px] flex-none place-items-center rounded-full border border-meyah-border bg-white shadow-sm transition hover:border-meyah-jade-500/40 lg:hidden"
             >
-              Todas
+              <SlidersHorizontal size={19} className="text-meyah-tinta-600" />
+              {filters.activeFilterCount > 0 && (
+                <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-meyah-jade-500 text-[11px] font-bold text-white">
+                  {filters.activeFilterCount}
+                </span>
+              )}
             </button>
+          </div>
+
+          {/* Categorías — multi-select chips */}
+          <div className="flex gap-2.5 overflow-x-auto pb-2 pt-1">
+            {filters.categories.size > 0 && (
+              <button
+                type="button"
+                onClick={filters.clearAllCategories}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-meyah-border bg-white px-3.5 py-2 text-[13px] font-medium text-meyah-tinta-600 transition hover:border-meyah-jade-500/40"
+              >
+                Todas
+              </button>
+            )}
             {JOB_CATEGORIES.map(c => {
               const Icon = ICON_BY_CATEGORY[c.value]
+              const active = filters.categories.has(c.value)
               return (
                 <button
                   key={c.value}
                   type="button"
-                  onClick={() => setCategory(c.value)}
+                  onClick={() => filters.toggleCategory(c.value)}
                   className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-[13px] font-medium transition ${
-                    category === c.value
+                    active
                       ? 'border-meyah-jade-500 bg-meyah-jade-50 text-meyah-jade-900'
                       : 'border-meyah-border bg-white text-meyah-tinta-600 hover:border-meyah-jade-500/40'
                   }`}
@@ -107,7 +108,20 @@ export default function FeedPage() {
               )
             })}
           </div>
+
+          {/* Desktop inline filters: jornada + salary */}
+          <DesktopFilters filters={filters} />
         </div>
+
+        {/* Banner de preferencias pre-activadas */}
+        {filters.hasPresetCategories && filters.categories.size > 0 && (
+          <p className="mx-4 mt-3 text-[12.5px] text-meyah-tinta-400 sm:mx-6.5">
+            Mostrando tus categorías preferidas.{' '}
+            <button type="button" onClick={filters.clearAllCategories} className="font-semibold text-meyah-jade-700 underline">
+              Ver todas
+            </button>
+          </p>
+        )}
 
         {/* Banner sin ubicación */}
         {!hasLocation && (
@@ -117,7 +131,7 @@ export default function FeedPage() {
           </div>
         )}
 
-        {/* Aviso de radio activo: sin él, un radio chico parece "no hay vacantes" */}
+        {/* Aviso de radio activo */}
         {hasLocation && profile?.radio_busqueda_km != null && (
           <p className="mx-4 mt-3 text-[12.5px] text-meyah-tinta-400 sm:mx-6.5">
             Mostrando vacantes a menos de <b className="text-meyah-tinta-600">{profile.radio_busqueda_km} km</b> de tu casa.{' '}
@@ -154,10 +168,10 @@ export default function FeedPage() {
             </div>
             <h3 className="text-[20px]">Sin resultados</h3>
             <p className="max-w-70 text-[13.5px] text-meyah-tinta-600">
-              No encontramos vacantes que coincidan con tu búsqueda o filtro.
+              No encontramos vacantes que coincidan con tu búsqueda o filtros.
             </p>
-            {hasFilters && (
-              <Button variant="ghost" onClick={clearFilters}>Limpiar filtros</Button>
+            {filters.hasFilters && (
+              <Button variant="ghost" onClick={filters.clearFilters}>Limpiar filtros</Button>
             )}
           </div>
         ) : (
@@ -228,6 +242,20 @@ export default function FeedPage() {
         </div>
       )}
 
+      {/* ===== Filter drawer (solo móvil) ===== */}
+      {showFilters && (
+        <FilterDrawer
+          schedules={filters.schedules}
+          toggleSchedule={filters.toggleSchedule}
+          salaryMin={filters.salaryMin}
+          setSalaryMin={filters.setSalaryMin}
+          salaryMax={filters.salaryMax}
+          setSalaryMax={filters.setSalaryMax}
+          resultCount={filtered.length}
+          onClose={() => setShowFilters(false)}
+        />
+      )}
+
       {selected && (
         <JobSheet
           jobId={selected.id}
@@ -235,6 +263,79 @@ export default function FeedPage() {
           onClose={() => setSelected(null)}
         />
       )}
+    </div>
+  )
+}
+
+/** Inline filter controls visible only on desktop (lg+) */
+function DesktopFilters({ filters }: { filters: ReturnType<typeof useJobFilters> }) {
+  const { schedules, toggleSchedule, salaryMin, setSalaryMin, salaryMax, setSalaryMax } = filters
+  const hasDesktopFilters = schedules.size > 0 || salaryMin !== null || salaryMax !== null
+
+  return (
+    <div className="hidden border-t border-meyah-border-soft pt-3 pb-1 lg:block">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5">
+        {/* Jornada chips */}
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] font-semibold text-meyah-tinta-400">Jornada:</span>
+          {(['tiempo_completo', 'medio_tiempo', 'turnos', 'comision'] as const).map(v => {
+            const label = { tiempo_completo: 'Completo', medio_tiempo: 'Medio', turnos: 'Turnos', comision: 'Comisión' }[v]
+            return (
+              <button
+                key={v}
+                type="button"
+                onClick={() => toggleSchedule(v)}
+                data-active={schedules.has(v)}
+                className="chip text-[12px]"
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Salary inputs */}
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] font-semibold text-meyah-tinta-400">Salario:</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={salaryMin !== null ? salaryMin.toLocaleString('es-MX') : ''}
+            onChange={e => {
+              const raw = e.target.value.replace(/\D/g, '')
+              setSalaryMin(raw === '' ? null : Number(raw))
+            }}
+            placeholder="Desde"
+            className="w-24 rounded-field border border-meyah-border bg-white px-2.5 py-1.5 text-[12px] text-meyah-tinta-900 outline-none placeholder:text-meyah-tinta-400 focus:border-meyah-jade-500"
+          />
+          <span className="text-[12px] text-meyah-tinta-400">–</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={salaryMax !== null ? salaryMax.toLocaleString('es-MX') : ''}
+            onChange={e => {
+              const raw = e.target.value.replace(/\D/g, '')
+              setSalaryMax(raw === '' ? null : Number(raw))
+            }}
+            placeholder="Hasta"
+            className="w-24 rounded-field border border-meyah-border bg-white px-2.5 py-1.5 text-[12px] text-meyah-tinta-900 outline-none placeholder:text-meyah-tinta-400 focus:border-meyah-jade-500"
+          />
+        </div>
+
+        {hasDesktopFilters && (
+          <button
+            type="button"
+            onClick={() => {
+              filters.schedules.forEach(s => toggleSchedule(s))
+              setSalaryMin(null)
+              setSalaryMax(null)
+            }}
+            className="text-[12px] font-semibold text-meyah-jade-700 underline"
+          >
+            Limpiar
+          </button>
+        )}
+      </div>
     </div>
   )
 }

@@ -617,6 +617,7 @@ export type Database = {
           company_nombre: string
           distancia_m: number
           id: string
+          jornada: Database["public"]["Enums"]["job_schedule"]
           lat: number
           lng: number
           salario_max: number
