@@ -1,5 +1,6 @@
 import { MapPin } from 'lucide-react'
 
+import VerifiedBadge from '@/features/companies/components/VerifiedBadge'
 import { JOB_CATEGORIES, ICON_BY_CATEGORY } from '@/features/jobs/schemas/categories'
 import type { JobCategoryValue } from '@/features/jobs/schemas/categories'
 import { formatDistance } from '@/shared/lib/formatDistance'
@@ -38,7 +39,10 @@ export default function NearbyJobCard({ job, onSelect, isActive, onHoverChange }
         <div className="flex items-start justify-between gap-2.5">
           <div className="min-w-0">
             <h3 className="line-clamp-2 font-display text-[18px] font-semibold leading-[1.18] text-meyah-jade-900">{job.titulo}</h3>
-            <p className="mt-px truncate text-[13.5px] text-meyah-tinta-600">{job.company_nombre}</p>
+            <p className="mt-px flex items-center gap-1.5 truncate text-[13.5px] text-meyah-tinta-600">
+              <span className="truncate">{job.company_nombre}</span>
+              <VerifiedBadge verified={job.company_is_verified} />
+            </p>
           </div>
           {dist && (
             <span className="inline-flex flex-none items-center gap-0.75 rounded-full bg-meyah-jade-50 px-2.25 py-1 text-[12.5px] font-semibold text-meyah-jade-700">

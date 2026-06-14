@@ -14,6 +14,29 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           candidato_id: string
@@ -781,6 +804,7 @@ export type Database = {
         Args: { p_lat?: number; p_lng?: number; p_max_m?: number }
         Returns: {
           categoria: string
+          company_is_verified: boolean
           company_nombre: string
           distancia_m: number
           id: string
@@ -1449,6 +1473,10 @@ export type Database = {
           table_name: string
         }
         Returns: string
+      }
+      verify_company: {
+        Args: { p_company_id: string; p_verified: boolean }
+        Returns: undefined
       }
     }
     Enums: {

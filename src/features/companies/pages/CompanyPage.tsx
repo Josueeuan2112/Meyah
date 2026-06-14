@@ -1,6 +1,9 @@
 import { Loader2 } from 'lucide-react'
+
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router'
+
+import VerifiedBadge from '@/features/companies/components/VerifiedBadge'
 
 import { useMyCompany } from '@/features/companies/hooks/useMyCompany'
 import { useCreateCompany } from '@/features/companies/hooks/useCreateCompany'
@@ -59,7 +62,10 @@ export default function CompanyPage() {
     <div className="mx-auto max-w-230 px-4 pt-12 pb-22.5 sm:px-6.5">
       <div style={{ animation: 'rise .5s cubic-bezier(.2,.7,.3,1) forwards' }}>
         <span className="eyebrow">Tu empresa</span>
-        <h1 className="mt-2.5 text-[clamp(30px,4vw,40px)]">Perfil de empresa</h1>
+        <div className="mt-2.5 flex items-center gap-2.5">
+          <h1 className="text-[clamp(30px,4vw,40px)]">Perfil de empresa</h1>
+          {company && <VerifiedBadge verified={company.is_verified} />}
+        </div>
         <p className="mt-3 text-[15.5px] text-meyah-tinta-600">
           Tu ubicación define a qué candidatos cercanos llegas.
         </p>

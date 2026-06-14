@@ -6,7 +6,7 @@ import { supabase } from '@/shared/lib/supabase'
 function buildJobDetailQuery(id: string) {
   return supabase
     .from('jobs')
-    .select('*, company:companies(id, nombre, descripcion, sitio_web, logo_url)')
+    .select('*, company:companies(id, nombre, descripcion, sitio_web, logo_url, is_verified)')
     .eq('id', id)
     .is('deleted_at', null)
     .maybeSingle()

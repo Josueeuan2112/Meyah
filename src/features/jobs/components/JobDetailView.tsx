@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { Building2, Clock, Loader2, MapPin, Share2, Wallet } from 'lucide-react'
+
 import { toast } from 'sonner'
 
+import VerifiedBadge from '@/features/companies/components/VerifiedBadge'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useJobDetail } from '@/features/jobs/hooks/useJobDetail'
 import { useMyApplicationForJob } from '@/features/applications/hooks/useMyApplicationForJob'
@@ -121,6 +123,7 @@ export default function JobDetailView({ jobId, distanciaM }: JobDetailViewProps)
         <h2 className="mt-2 text-[28px]">{job.titulo}</h2>
         <p className="mt-2.5 flex items-center gap-1.5 text-[14px] text-meyah-tinta-600">
           <Building2 size={15} />{job.company?.nombre ?? 'Empresa no disponible'}
+          <VerifiedBadge verified={job.company?.is_verified ?? false} />
         </p>
       </div>
 
