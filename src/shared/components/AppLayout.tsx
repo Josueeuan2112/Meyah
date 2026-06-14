@@ -1,24 +1,28 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router'
-import { Briefcase, Building2, Compass, FileText, LogOut, User } from 'lucide-react'
+import { Briefcase, Building2, Compass, FileText, LogOut, MessageSquare, User } from 'lucide-react'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount'
 
 const NAV_BY_ROLE = {
   candidato: [
-    { to: '/inicio',            label: 'Explorar',      icon: Compass   },
-    { to: '/mis-postulaciones', label: 'Postulaciones', icon: FileText  },
-    { to: '/mi-perfil',         label: 'Perfil',        icon: User      },
+    { to: '/inicio',            label: 'Explorar',      icon: Compass      },
+    { to: '/mis-postulaciones', label: 'Postulaciones', icon: FileText     },
+    { to: '/mensajes',          label: 'Mensajes',      icon: MessageSquare },
+    { to: '/mi-perfil',         label: 'Perfil',        icon: User         },
   ],
   empleador: [
-    { to: '/dashboard',  label: 'Vacantes', icon: Briefcase  },
-    { to: '/mi-empresa', label: 'Empresa',  icon: Building2  },
-    { to: '/mi-perfil',  label: 'Perfil',   icon: User       },
+    { to: '/dashboard',  label: 'Vacantes', icon: Briefcase    },
+    { to: '/mensajes',   label: 'Mensajes', icon: MessageSquare },
+    { to: '/mi-empresa', label: 'Empresa',  icon: Building2    },
+    { to: '/mi-perfil',  label: 'Perfil',   icon: User         },
   ],
 } as const
 
 export default function AppLayout() {
   const { profile, signOut } = useAuth()
   const navigate = useNavigate()
+  const { data: unreadCount } = useUnreadCount()
 
   const items = profile ? NAV_BY_ROLE[profile.tipo] : []
 
@@ -51,11 +55,16 @@ export default function AppLayout() {
                 to={to}
                 className={({ isActive }) =>
                   isActive
-                    ? 'px-3.5 py-2 rounded-full text-[17px] font-semibold text-meyah-jade-700 bg-meyah-jade-50'
-                    : 'px-3.5 py-2 rounded-full text-[17px] font-medium text-meyah-tinta-600 transition-colors hover:text-meyah-jade-900 hover:bg-meyah-crema-100'
+                    ? 'relative px-3.5 py-2 rounded-full text-[17px] font-semibold text-meyah-jade-700 bg-meyah-jade-50'
+                    : 'relative px-3.5 py-2 rounded-full text-[17px] font-medium text-meyah-tinta-600 transition-colors hover:text-meyah-jade-900 hover:bg-meyah-crema-100'
                 }
               >
                 {label}
+                {to === '/mensajes' && !!unreadCount && unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-meyah-terracota-500 px-1 text-[10px] font-bold text-white">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>
@@ -99,13 +108,18 @@ export default function AppLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 py-2 flex-1 transition-colors ${
+              `relative flex flex-col items-center gap-0.5 py-2 flex-1 transition-colors ${
                 isActive ? 'text-meyah-jade-700' : 'text-meyah-tinta-400'
               }`
             }
           >
             <Icon size={20} aria-hidden="true" />
             <span className="text-[10px] font-medium leading-none">{label}</span>
+            {to === '/mensajes' && !!unreadCount && unreadCount > 0 && (
+              <span className="absolute top-1 right-1/4 grid h-4 min-w-4 place-items-center rounded-full bg-meyah-terracota-500 px-0.5 text-[9px] font-bold text-white">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

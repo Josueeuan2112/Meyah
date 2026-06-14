@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { ArrowLeft, MapPin, Phone, Users } from 'lucide-react'
+import { ArrowLeft, MapPin, MessageSquare, Phone, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useJobDetail } from '@/features/jobs/hooks/useJobDetail'
 import { useJobApplicants } from '@/features/applications/hooks/useJobApplicants'
 import { useUpdateApplicationStatus } from '@/features/applications/hooks/useUpdateApplicationStatus'
 import { useMarkApplicationsViewed } from '@/features/applications/hooks/useMarkApplicationsViewed'
+import { useCreateConversation } from '@/features/chat/hooks/useCreateConversation'
 import { APPLICATION_STATUS_BADGE_CLASS, APPLICATION_STATUS_LABEL } from '@/features/applications/constants'
 import { formatDistance } from '@/shared/lib/formatDistance'
 import { Button } from '@/shared/ui/button'
@@ -28,6 +29,7 @@ export default function JobApplicantsPage() {
   const { data: applicants, isLoading: applicantsLoading, isError } = useJobApplicants(id)
   const updateStatus = useUpdateApplicationStatus(id ?? '')
   const markViewed = useMarkApplicationsViewed(id)
+  const createConversation = useCreateConversation()
 
   // Al abrir la lista, las 'pendiente' pasan a 'vista' (una vez por montaje):
   // el candidato ve en sus postulaciones que el empleador ya las abrió
@@ -47,6 +49,17 @@ export default function JobApplicantsPage() {
         onSuccess: () => toast.success('Postulante aceptado'),
         onError:   () => toast.error('No se pudo actualizar la postulación'),
       }
+    )
+  }
+
+  const handleChat = (candidatoId: string) => {
+    if (!id) return
+    createConversation.mutate(
+      { jobId: id, candidatoId },
+      {
+        onSuccess: (conversationId) => void navigate(`/mensajes/${conversationId}`),
+        onError: () => toast.error('No se pudo iniciar el chat'),
+      },
     )
   }
 
@@ -194,6 +207,15 @@ export default function JobApplicantsPage() {
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => handleRechazar(app.id)} disabled={app.estado === 'rechazada' || isUpdating}>
                       Rechazar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleChat(app.candidato_id)}
+                      disabled={createConversation.isPending}
+                      className="ml-auto"
+                    >
+                      <MessageSquare size={14} className="mr-1.5" /> Chat
                     </Button>
                   </div>
                 </article>

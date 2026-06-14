@@ -21,6 +21,14 @@ export type Application = Tables<'applications'>
 export type ApplicationInsert = TablesInsert<'applications'>
 export type ApplicationUpdate = TablesUpdate<'applications'>
 
+// ── Conversations ───────────────────────────────────────────────────────────
+export type Conversation = Tables<'conversations'>
+export type ConversationInsert = TablesInsert<'conversations'>
+
+// ── Messages ────────────────────────────────────────────────────────────────
+export type Message = Tables<'messages'>
+export type MessageInsert = TablesInsert<'messages'>
+
 // ── Enums ────────────────────────────────────────────────────────────────────
 export type UserType = Enums<'user_type'>             // 'empleador' | 'candidato'
 export type JobStatus = Enums<'job_status'>           // 'abierta' | 'cerrada'

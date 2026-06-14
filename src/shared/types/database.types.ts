@@ -127,6 +127,52 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          candidato_id: string
+          created_at: string
+          empleador_id: string
+          id: string
+          job_id: string
+        }
+        Insert: {
+          candidato_id: string
+          created_at?: string
+          empleador_id: string
+          id?: string
+          job_id: string
+        }
+        Update: {
+          candidato_id?: string
+          created_at?: string
+          empleador_id?: string
+          id?: string
+          job_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_candidato_id_fkey"
+            columns: ["candidato_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_empleador_id_fkey"
+            columns: ["empleador_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           categoria: string
@@ -200,6 +246,87 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_reports: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string
+          reason: string
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id: string
+          reason: string
+          reporter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string
+          reason?: string
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reports_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -635,6 +762,7 @@ export type Database = {
       job_applicants_near: {
         Args: { p_job_id: string }
         Returns: {
+          candidato_id: string
           candidato_nombre: string
           candidato_phone: string
           created_at: string
@@ -661,6 +789,22 @@ export type Database = {
         }[]
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      my_conversations: {
+        Args: never
+        Returns: {
+          candidato_id: string
+          company_nombre: string
+          created_at: string
+          empleador_id: string
+          id: string
+          job_id: string
+          job_titulo: string
+          last_message: string
+          last_message_at: string
+          other_name: string
+          unread_count: number
+        }[]
+      }
       my_jobs_applicant_proximity: {
         Args: { p_max_m?: number }
         Returns: {
@@ -1291,6 +1435,7 @@ export type Database = {
         Returns: unknown
       }
       unlockrows: { Args: { "": string }; Returns: number }
+      unread_messages_count: { Args: never; Returns: number }
       updategeometrysrid: {
         Args: {
           catalogn_name: string

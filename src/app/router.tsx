@@ -47,6 +47,8 @@ export const router = createBrowserRouter([
         children: [
           // Compartida por ambos roles
           { path: '/mi-perfil', lazy: page(() => import('@/features/profile/pages/ProfilePage')) },
+          { path: '/mensajes',  lazy: page(() => import('@/features/chat/pages/ConversationsPage')) },
+          { path: '/mensajes/:id', lazy: page(() => import('@/features/chat/pages/ConversationPage')) },
 
           // Solo candidato — un empleador es redirigido a /dashboard
           {
