@@ -9,7 +9,10 @@ import {
   Briefcase,
   Building2,
   Check,
+  Lock,
+  Mail,
   MapPin,
+  Phone,
   Route,
   Search,
   Zap,
@@ -105,6 +108,9 @@ export default function RegisterPage() {
       lng_referencia: MERIDA_CENTER[1],
       radio_busqueda_km: 5,
       categorias_interes: [],
+      // Arranca sin aceptar: el submit queda bloqueado por el schema (terms: true).
+      // Cast porque el campo es z.literal(true) y el default es false.
+      terms: false as unknown as true,
     },
   })
 
@@ -433,6 +439,7 @@ export default function RegisterPage() {
                   type="email"
                   placeholder="tu@correo.com"
                   autoComplete="email"
+                  icon={<Mail size={17} />}
                   aria-invalid={!!errors.email}
                   {...register('email')}
                 />
@@ -445,6 +452,7 @@ export default function RegisterPage() {
                   type={show ? 'text' : 'password'}
                   placeholder="Mínimo 8 caracteres"
                   autoComplete="new-password"
+                  icon={<Lock size={17} />}
                   aria-invalid={!!errors.password}
                   trailing={
                     <button
@@ -467,6 +475,7 @@ export default function RegisterPage() {
                   inputMode="tel"
                   placeholder="999 000 0000"
                   autoComplete="tel"
+                  icon={<Phone size={17} />}
                   aria-invalid={!!errors.phone}
                   {...register('phone')}
                 />
@@ -533,6 +542,30 @@ export default function RegisterPage() {
             </div>
 
             <div className="mt-[26px] flex flex-col gap-2 lg:mt-auto lg:pt-[30px]">
+              {/* Aceptación de Términos y Privacidad. Las rutas /terminos y
+                  /privacidad son placeholders: las páginas legales aún no existen,
+                  se crean antes del lanzamiento. */}
+              <label className="mb-1 flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4.5 w-4.5 flex-none accent-meyah-jade-700"
+                  aria-invalid={!!errors.terms}
+                  {...register('terms')}
+                />
+                <span className="text-[13px] leading-normal text-meyah-tinta-600">
+                  Acepto los{' '}
+                  <Link to="/terminos" className="font-semibold text-meyah-jade-700 hover:underline">
+                    Términos
+                  </Link>{' '}
+                  y el{' '}
+                  <Link to="/privacidad" className="font-semibold text-meyah-jade-700 hover:underline">
+                    Aviso de Privacidad
+                  </Link>
+                  .
+                </span>
+              </label>
+              {errors.terms && <span className={err}>{errors.terms.message}</span>}
+
               <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? 'Creando tu cuenta…' : 'Crear mi cuenta'} <ArrowRight />
               </Button>

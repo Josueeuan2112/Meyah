@@ -109,18 +109,18 @@ export function CompletionCard({ profile, company, onComplete }: CompletionCardP
 
 interface TrustFactor { label: string; ok: boolean }
 
-function computeCandidatoTrust(p: Profile): TrustFactor[] {
+function computeCandidatoTrust(p: Profile, emailVerified: boolean): TrustFactor[] {
   return [
-    { label: 'Correo verificado', ok: true },
+    { label: emailVerified ? 'Correo verificado' : 'Correo sin confirmar', ok: emailVerified },
     { label: 'Teléfono registrado', ok: !!p.phone },
     { label: 'Ubicación de referencia', ok: p.lat_referencia != null },
     { label: 'CV cargado', ok: !!p.cv_path },
   ]
 }
 
-function computeEmpleadorTrust(p: Profile, company: Company | null): TrustFactor[] {
+function computeEmpleadorTrust(p: Profile, company: Company | null, emailVerified: boolean): TrustFactor[] {
   return [
-    { label: 'Correo verificado', ok: true },
+    { label: emailVerified ? 'Correo verificado' : 'Correo sin confirmar', ok: emailVerified },
     { label: 'Teléfono registrado', ok: !!p.phone },
     { label: 'Empresa registrada', ok: !!company },
     { label: 'Empresa verificada', ok: !!company?.is_verified },
@@ -133,9 +133,14 @@ interface TrustCardProps {
 }
 
 export function TrustCard({ profile, company }: TrustCardProps) {
+  // Verificación real de correo: refleja email_confirmed_at de Supabase Auth,
+  // no un valor hardcodeado. Un correo sin confirmar baja el Trust Score real.
+  const { user } = useAuth()
+  const emailVerified = !!user?.email_confirmed_at
+
   const factors = profile.tipo === 'candidato'
-    ? computeCandidatoTrust(profile)
-    : computeEmpleadorTrust(profile, company ?? null)
+    ? computeCandidatoTrust(profile, emailVerified)
+    : computeEmpleadorTrust(profile, company ?? null, emailVerified)
 
   const score = Math.round((factors.filter(f => f.ok).length / factors.length) * 100)
   const nivel = score >= 85 ? 'Muy alto' : score >= 60 ? 'Alto' : score >= 40 ? 'Medio' : 'Bajo'

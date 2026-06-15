@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react'
 
 import RootLayout from '@/shared/components/RootLayout'
 import AppLayout from '@/shared/components/AppLayout'
+import RouteError from '@/shared/components/RouteError'
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute'
 import RequireRole from '@/features/auth/components/RequireRole'
 
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
   // ── Bloque A: rutas públicas con Header/Footer ──────────────────────────
   {
     element: <RootLayout />,
+    errorElement: <RouteError />,
     hydrateFallbackElement: hydrateFallback,
     children: [
       { path: '/',            lazy: page(() => import('@/features/landing/pages/LandingPage')) },
@@ -40,10 +42,12 @@ export const router = createBrowserRouter([
   // ── Bloque B: rutas protegidas con shell de app ──────────────────────────
   {
     element: <ProtectedRoute />,
+    errorElement: <RouteError />,
     hydrateFallbackElement: hydrateFallback,
     children: [
       {
         element: <AppLayout />,
+        errorElement: <RouteError />,
         children: [
           // Compartida por ambos roles
           { path: '/mi-perfil', lazy: page(() => import('@/features/profile/pages/ProfilePage')) },
@@ -66,6 +70,7 @@ export const router = createBrowserRouter([
             children: [
               { path: '/mi-empresa',                        lazy: page(() => import('@/features/companies/pages/CompanyPage')) },
               { path: '/dashboard',                         lazy: page(() => import('@/features/jobs/pages/DashboardPage')) },
+              { path: '/dashboard/analiticas',              lazy: page(() => import('@/features/analytics/pages/AnalyticsPage')) },
               { path: '/dashboard/nueva-vacante',           lazy: page(() => import('@/features/jobs/pages/NewJobPage')) },
               { path: '/dashboard/vacante/:id/editar',      lazy: page(() => import('@/features/jobs/pages/EditJobPage')) },
               { path: '/dashboard/vacante/:id/postulantes', lazy: page(() => import('@/features/applications/pages/JobApplicantsPage')) },

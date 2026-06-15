@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -7,6 +8,11 @@ import { Textarea } from '@/shared/ui/textarea'
 import { StarRating } from '@/features/reviews/components/StarRating'
 import { useCreateReview } from '@/features/reviews/hooks/useCreateReview'
 import { useMyReviewForApplication } from '@/features/reviews/hooks/useMyReviewForApplication'
+import {
+  reviewSchema,
+  type ReviewFormData,
+  MAX_COMMENT_LENGTH,
+} from '@/features/reviews/schemas/review.schema'
 
 interface ReviewFormProps {
   applicationId: string
@@ -14,14 +20,26 @@ interface ReviewFormProps {
   onSuccess?: () => void
 }
 
-const MAX_COMMENT_LENGTH = 300
-
 export function ReviewForm({ applicationId, companyId, onSuccess }: ReviewFormProps) {
   const { data: existingReview, isLoading: isLoadingReview } = useMyReviewForApplication(applicationId)
   const createReview = useCreateReview()
 
-  const [rating, setRating] = useState(0)
-  const [comment, setComment] = useState('')
+  const {
+    handleSubmit,
+    setValue,
+    watch,
+    register,
+    formState: { errors },
+  } = useForm<ReviewFormData>({
+    resolver: zodResolver(reviewSchema),
+    // rating arranca en 0 (sin elegir): el min(1) del schema bloquea el envío.
+    defaultValues: { rating: 0, comment: '' },
+  })
+
+  // Patrón watch + setValue: StarRating no es un <input>, así que reflejamos su
+  // valor en el form con setValue y lo leemos con watch (sin estado paralelo).
+  const rating = watch('rating')
+  const comment = watch('comment') ?? ''
 
   if (isLoadingReview) {
     return (
@@ -31,13 +49,13 @@ export function ReviewForm({ applicationId, companyId, onSuccess }: ReviewFormPr
     )
   }
 
-  // Ya existe una resena para esta postulacion
+  // Ya existe una reseña para esta postulación
   if (existingReview) {
     return (
       <div className="rounded-field border border-meyah-jade-500/20 bg-meyah-jade-50 p-4">
         <div className="flex items-center gap-2">
           <CheckCircle2 size={16} className="text-meyah-jade-700" />
-          <p className="text-[13px] font-semibold text-meyah-jade-700">Tu calificacion</p>
+          <p className="text-[13px] font-semibold text-meyah-jade-700">Tu calificación</p>
         </div>
         <div className="mt-2">
           <StarRating value={existingReview.rating} readonly size={16} />
@@ -49,24 +67,17 @@ export function ReviewForm({ applicationId, companyId, onSuccess }: ReviewFormPr
     )
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (rating === 0) {
-      toast.error('Selecciona una calificacion')
-      return
-    }
-
+  const onSubmit = (data: ReviewFormData) => {
     createReview.mutate(
       {
         applicationId,
         companyId,
-        rating,
-        comment: comment.trim() || undefined,
+        rating: data.rating,
+        comment: data.comment?.trim() || undefined,
       },
       {
         onSuccess: () => {
-          toast.success('Calificacion enviada')
+          toast.success('Calificación enviada')
           onSuccess?.()
         },
         onError: (err) => toast.error(err.message),
@@ -75,12 +86,19 @@ export function ReviewForm({ applicationId, companyId, onSuccess }: ReviewFormPr
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
       <div>
         <label className="mb-1.5 block text-[13px] font-semibold text-meyah-tinta-900">
-          Tu calificacion
+          Tu calificación
         </label>
-        <StarRating value={rating} onChange={setRating} size={24} />
+        <StarRating
+          value={rating}
+          onChange={(value) => setValue('rating', value, { shouldValidate: true })}
+          size={24}
+        />
+        {errors.rating && (
+          <p className="mt-1 text-[12px] text-meyah-terracota-700">{errors.rating.message}</p>
+        )}
       </div>
 
       <div>
@@ -88,24 +106,23 @@ export function ReviewForm({ applicationId, companyId, onSuccess }: ReviewFormPr
           Comentario <span className="font-normal text-meyah-tinta-400">(opcional)</span>
         </label>
         <Textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value.slice(0, MAX_COMMENT_LENGTH))}
-          placeholder="Comparte tu experiencia con esta empresa..."
+          placeholder="Comparte tu experiencia con esta empresa…"
           className="min-h-20 text-[13.5px]"
           maxLength={MAX_COMMENT_LENGTH}
+          aria-invalid={!!errors.comment}
+          {...register('comment')}
         />
         <p className="mt-1 text-right text-[11px] text-meyah-tinta-400">
           {comment.length}/{MAX_COMMENT_LENGTH}
         </p>
+        {errors.comment && (
+          <p className="text-[12px] text-meyah-terracota-700">{errors.comment.message}</p>
+        )}
       </div>
 
-      <Button
-        type="submit"
-        size="sm"
-        disabled={rating === 0 || createReview.isPending}
-      >
+      <Button type="submit" size="sm" disabled={rating === 0 || createReview.isPending}>
         {createReview.isPending && <Loader2 className="size-3.5 animate-spin" />}
-        Enviar calificacion
+        Enviar calificación
       </Button>
     </form>
   )

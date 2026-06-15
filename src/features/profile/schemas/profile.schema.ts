@@ -7,13 +7,17 @@ export const profileSchema = z
       .trim()
       .min(2, 'El nombre es obligatorio')
       .max(80, 'Máximo 80 caracteres'),
+    // B8: la columna profiles.phone es nullable. El teléfono es OPCIONAL aquí:
+    // un usuario que se registró sin teléfono debe poder guardar otros cambios
+    // de perfil sin inventar uno. Si SÍ se provee, debe ser válido (≥10 dígitos).
     phone: z
       .string()
       .trim()
-      .min(10, 'Ingresa un teléfono de 10 dígitos.')
       .max(20, 'Máximo 20 caracteres')
-      // Mismo criterio que registerSchema: sin regex pasaba texto arbitrario
-      .regex(/^\+?[\d\s()-]+$/, 'El teléfono solo puede tener números, espacios y guiones.'),
+      .refine(
+        v => v === '' || (/^\+?[\d\s()-]+$/.test(v) && v.replace(/\D/g, '').length >= 10),
+        'Ingresa un teléfono válido de 10 dígitos o déjalo vacío.',
+      ),
     profesion: z.string().trim().max(100, 'Máximo 100 caracteres').optional().or(z.literal('')),
     bio: z.string().trim().max(240, 'Máximo 240 caracteres').optional().or(z.literal('')),
     lat_referencia: z.number().min(-90).max(90).nullable(),

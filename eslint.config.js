@@ -18,5 +18,12 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // Regla solo de DX (granularidad de Fast Refresh), no de correctitud.
+      // Dispara en patrones idiomáticos e intencionales: el hook useAuth colocado
+      // con su AuthProvider, y buttonVariants (cva) junto a Button en shadcn.
+      // La dejamos como warning (visible) para que no bloquee el gate de CI.
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    },
   },
 ])

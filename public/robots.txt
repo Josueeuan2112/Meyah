@@ -1,0 +1,14 @@
+# Meyah — robots.txt
+# Permite el rastreo del sitio público. Las rutas privadas viven detrás de
+# autenticación (no son indexables de todos modos) pero las excluimos por claridad.
+
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /mi-perfil
+Disallow: /mi-empresa
+Disallow: /mensajes
+Disallow: /mis-postulaciones
+
+# IMPORTANTE: reemplaza el dominio por el de producción antes de lanzar.
+Sitemap: https://REEMPLAZAR-DOMINIO.com/sitemap.xml

@@ -30,9 +30,29 @@ export default function JobApplicantsPage() {
 
   const handleViewCV = async (cvPath: string, appId: string) => {
     setLoadingCvId(appId)
-    const url = await getSignedCVUrl(cvPath)
-    setLoadingCvId(null)
-    if (url) window.open(url, '_blank')
+    // Abre la pestaña SINCRÓNICAMENTE, dentro del gesto del clic. Si se abriera
+    // tras el await de la URL firmada, el navegador (sobre todo Safari iOS) la
+    // bloquea como popup. Después solo se le asigna la URL ya resuelta.
+    const tab = window.open('', '_blank')
+    try {
+      const url = await getSignedCVUrl(cvPath)
+      if (!url) {
+        tab?.close()
+        toast.error('No se pudo abrir el CV. Intenta de nuevo.')
+        return
+      }
+      if (tab) {
+        tab.location.href = url
+      } else {
+        // Popup bloqueado: navega la pestaña actual como fallback.
+        window.location.href = url
+      }
+    } catch {
+      tab?.close()
+      toast.error('No se pudo abrir el CV. Intenta de nuevo.')
+    } finally {
+      setLoadingCvId(null)
+    }
   }
 
   const { data: job, isLoading: jobLoading } = useJobDetail(id)
@@ -194,14 +214,19 @@ export default function JobApplicantsPage() {
                     </span>
                   </div>
 
+                  {/* El teléfono solo viene del backend (candidato_phone) cuando la
+                      postulación está aceptada; antes de eso la RPC lo devuelve null.
+                      Por eso el enlace tel: aparece únicamente con valor; en null se
+                      muestra un hint, no "sin teléfono". El CV (botón abajo) sí está
+                      siempre disponible, independiente de esto. */}
                   <div className="mt-3.5 flex items-center gap-2 text-[14px]">
                     {app.candidato_phone ? (
                       <a href={`tel:${app.candidato_phone}`} className="inline-flex items-center gap-1.5 font-medium text-meyah-jade-700 hover:underline">
                         <Phone size={14} /> {app.candidato_phone}
                       </a>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 text-meyah-tinta-400">
-                        <Phone size={14} /> Sin teléfono registrado
+                      <span className="inline-flex items-center gap-1.5 text-[13px] text-meyah-tinta-400">
+                        <Phone size={14} /> El teléfono se revela al aceptar la postulación
                       </span>
                     )}
                   </div>

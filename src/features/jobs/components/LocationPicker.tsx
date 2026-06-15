@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import type L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
 import { meyahPin } from '@/shared/lib/mapPin'
 

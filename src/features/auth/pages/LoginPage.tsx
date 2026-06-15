@@ -3,12 +3,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
-import { ArrowRight, Check, User } from 'lucide-react'
+import { ArrowRight, Lock, Mail } from 'lucide-react'
 
 import { loginSchema, type LoginFormData } from '@/features/auth/schemas/auth.schemas'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import AuthInput from '@/features/auth/components/AuthInput'
 import BrandMap from '@/shared/components/BrandMap'
+import { supabase } from '@/shared/lib/supabase'
 import { Button } from '@/shared/ui/button'
 
 function Wordmark({ className }: { className?: string }) {
@@ -59,7 +60,25 @@ export default function LoginPage() {
     }
 
     toast.success('¡Bienvenido de nuevo!')
-    navigate('/inicio')
+
+    // Redirect por rol. signIn no devuelve el perfil y el `profile` del contexto
+    // se llena de forma asíncrona (onAuthStateChange usa setTimeout(0)), así que
+    // navegar de inmediato leería un profile=null y un empleador caería en /inicio
+    // solo para que RequireRole lo rebotara a /dashboard. Para evitar ese rebote
+    // consultamos profiles.tipo puntualmente aquí y navegamos al destino correcto:
+    // candidato → /inicio, empleador → /dashboard. Si la consulta falla, /inicio
+    // es el fallback neutro (RequireRole corrige al empleador sin dejarlo varado).
+    const { data: { user } } = await supabase.auth.getUser()
+    let destino = '/inicio'
+    if (user) {
+      const { data: profileRow } = await supabase
+        .from('profiles')
+        .select('tipo')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (profileRow?.tipo === 'empleador') destino = '/dashboard'
+    }
+    navigate(destino)
   }
 
   return (
@@ -112,7 +131,7 @@ export default function LoginPage() {
               type="email"
               placeholder="tu@correo.com"
               autoComplete="email"
-              icon={<User size={17} />}
+              icon={<Mail size={17} />}
               aria-invalid={!!errors.email}
               {...register('email')}
             />
@@ -135,7 +154,7 @@ export default function LoginPage() {
               type={show ? 'text' : 'password'}
               placeholder="••••••••"
               autoComplete="current-password"
-              icon={<Check size={17} />}
+              icon={<Lock size={17} />}
               aria-invalid={!!errors.password}
               trailing={
                 <button

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sitemap base de Meyah. Solo rutas públicas (no autenticadas).
+  IMPORTANTE: reemplaza https://REEMPLAZAR-DOMINIO.com por el dominio real de
+  producción antes de lanzar. Cuando exista prerender/SSR de /vacante/:id,
+  considera generar este sitemap dinámicamente con las vacantes abiertas.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://REEMPLAZAR-DOMINIO.com/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://REEMPLAZAR-DOMINIO.com/registro</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://REEMPLAZAR-DOMINIO.com/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>

@@ -225,6 +225,21 @@ export type Database = {
           },
         ]
       }
+      job_view_dedup: {
+        Row: {
+          last_viewed_at: string
+          view_key: string
+        }
+        Insert: {
+          last_viewed_at?: string
+          view_key: string
+        }
+        Update: {
+          last_viewed_at?: string
+          view_key?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           categoria: string

@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router'
-import { Briefcase, Building2, Compass, FileText, LogOut, MessageSquare, User } from 'lucide-react'
+import { BarChart3, Briefcase, Building2, Compass, FileText, LogOut, MessageSquare, User } from 'lucide-react'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount'
@@ -12,10 +12,11 @@ const NAV_BY_ROLE = {
     { to: '/mi-perfil',         label: 'Perfil',        icon: User         },
   ],
   empleador: [
-    { to: '/dashboard',  label: 'Vacantes', icon: Briefcase    },
-    { to: '/mensajes',   label: 'Mensajes', icon: MessageSquare },
-    { to: '/mi-empresa', label: 'Empresa',  icon: Building2    },
-    { to: '/mi-perfil',  label: 'Perfil',   icon: User         },
+    { to: '/dashboard',             label: 'Vacantes',    icon: Briefcase     },
+    { to: '/dashboard/analiticas',  label: 'Analíticas',  icon: BarChart3     },
+    { to: '/mensajes',              label: 'Mensajes',    icon: MessageSquare },
+    { to: '/mi-empresa',            label: 'Empresa',     icon: Building2     },
+    { to: '/mi-perfil',             label: 'Perfil',      icon: User          },
   ],
 } as const
 
@@ -53,6 +54,7 @@ export default function AppLayout() {
               <NavLink
                 key={to}
                 to={to}
+                end
                 className={({ isActive }) =>
                   isActive
                     ? 'relative px-3.5 py-2 rounded-full text-[17px] font-semibold text-meyah-jade-700 bg-meyah-jade-50'
@@ -107,6 +109,7 @@ export default function AppLayout() {
           <NavLink
             key={to}
             to={to}
+            end
             className={({ isActive }) =>
               `relative flex flex-col items-center gap-0.5 py-2 flex-1 transition-colors ${
                 isActive ? 'text-meyah-jade-700' : 'text-meyah-tinta-400'

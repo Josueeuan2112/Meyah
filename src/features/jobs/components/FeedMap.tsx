@@ -1,13 +1,15 @@
 import { useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 import { ICON_BY_CATEGORY } from '@/features/jobs/schemas/categories'
 import type { JobCategoryValue } from '@/features/jobs/schemas/categories'
 import type { NearbyJob } from '@/features/jobs/hooks/useNearbyJobs'
 
-// El CSS de Leaflet se importa de forma global en main.tsx.
+// El CSS de Leaflet se importa aquí (no global): solo baja con el chunk del mapa.
+// Vite lo deduplica si otro componente de mapa también lo importa.
 
 const MERIDA_CENTER: [number, number] = [20.9674, -89.5926]
 

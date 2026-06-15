@@ -8,7 +8,6 @@ import type { MyJob } from '@/features/jobs/hooks/useMyJobs'
 import { useMyJobsProximity } from '@/features/jobs/hooks/useMyJobsProximity'
 import { useUpdateJob } from '@/features/jobs/hooks/useUpdateJob'
 import { useDeleteJob } from '@/features/jobs/hooks/useDeleteJob'
-import AnalyticsPanel from '@/features/jobs/components/AnalyticsPanel'
 import { ICON_BY_CATEGORY, JOB_CATEGORIES } from '@/features/jobs/schemas/categories'
 import type { JobCategoryValue } from '@/features/jobs/schemas/categories'
 import { formatSalary } from '@/shared/lib/formatSalary'
@@ -311,9 +310,6 @@ export default function DashboardPage() {
             })}
           </div>
         )}
-
-        {/* Analytics — solo si hay al menos una vacante */}
-        {jobList.length > 0 && <AnalyticsPanel />}
 
       </div>
     </div>

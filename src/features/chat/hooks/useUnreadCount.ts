@@ -16,7 +16,10 @@ export function useUnreadCount() {
       return data ?? 0
     },
     enabled: !!user,
-    refetchInterval: 60_000,
+    // Sin polling: la suscripción realtime de abajo invalida el contador cuando
+    // llega un mensaje nuevo. El refetchInterval de 60s era redundante (y a escala
+    // multiplicaba la carga del RPC). Follow-up de escala documentado: filtrar el
+    // canal realtime por las conversaciones del usuario en vez de toda la tabla.
   })
 
   // Listen for any new messages to refresh the count

@@ -28,6 +28,14 @@ export default function ConversationPage() {
   // Stable ref to avoid re-firing on every mutation identity change
   const markReadMutate = useCallback(() => markRead.mutate(), [markRead.mutate]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Reset the "already marked read" flag when switching conversations. Without
+  // this, navigating from one chat to another (the component stays mounted, only
+  // :id changes) kept the flag true and the second conversation never got marked
+  // as read.
+  useEffect(() => {
+    markedReadRef.current = false
+  }, [id])
+
   // Mark messages as read when viewing (once per mount)
   useEffect(() => {
     if (markedReadRef.current) return

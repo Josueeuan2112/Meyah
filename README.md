@@ -1,73 +1,71 @@
-# React + TypeScript + Vite
+# Meyah
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Encuentra trabajo cerca de tu casa.** Marketplace de empleos formales con búsqueda por cercanía geográfica para Mérida, Yucatán.
 
-Currently, two official plugins are available:
+> Para el contexto completo del proyecto (identidad, convenciones, arquitectura, reglas de seguridad y flujo de migraciones) ver [`CLAUDE.md`](./CLAUDE.md).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+- **Frontend:** React 19 + Vite 8 + TypeScript 6, Tailwind CSS v4, shadcn/ui, React Router v7, TanStack Query v5, React Hook Form + Zod.
+- **Backend:** Supabase (Auth + PostgreSQL + Storage + RLS) con PostGIS.
+- **Mapas:** Leaflet + React-Leaflet, tiles de CartoDB, geocoding con Nominatim (OpenStreetMap).
+- **Infra:** Vercel (frontend), Cloudflare (DNS/WAF), Sentry (monitoreo opcional).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Requisitos
 
-## Expanding the ESLint configuration
+- Node.js 22+
+- Cuenta de Supabase (proyecto enlazado con la CLI de Supabase)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Variables de entorno
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Copia [`.env.example`](./.env.example) a `.env.local` y rellena los valores. **Nunca** commitees `.env.local`.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+| Variable | Requerida | Descripción |
+|----------|-----------|-------------|
+| `VITE_SUPABASE_URL` | Sí | URL del proyecto Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Sí | Anon/public key (segura en el frontend) |
+| `VITE_SENTRY_DSN` | No | Si se define, activa el reporte de errores en producción |
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+En Vercel, configurar estas variables en **Settings → Environment Variables** (las `VITE_*` se incrustan en build).
+
+## Comandos
+
+```bash
+npm run dev        # Servidor de desarrollo (Vite)
+npm run build      # tsc -b && vite build (producción)
+npm run preview    # Previsualizar el build
+npm run lint       # ESLint
+npm run gen:types  # Regenerar tipos de Supabase desde la BD enlazada
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+**Type-check oficial:** `npx tsc --noEmit -p tsconfig.app.json`
+(NO usar `npx tsc --noEmit` a secas: el tsconfig raíz es solution-style y reporta cero archivos.)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Base de datos / migraciones
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Toda alteración del esquema va en un archivo versionado en `supabase/migrations/`:
+
+```bash
+npx supabase db push --linked        # aplica las migraciones pendientes al remoto
+npx supabase migration list --linked # verifica sincronía Local = Remote
+npm run gen:types                    # regenera src/shared/types/database.types.ts
 ```
+
+**Nunca** usar el SQL Editor del dashboard para cambios de esquema (desincroniza el remoto de los archivos versionados).
+
+## Despliegue (Vercel)
+
+1. Configurar las variables de entorno (arriba).
+2. `vercel.json` ya define el fallback SPA y las cabeceras de seguridad (CSP, HSTS, etc.).
+3. **Antes de lanzar:** reemplazar `REEMPLAZAR-DOMINIO.com` en `public/robots.txt` y `public/sitemap.xml` por el dominio real.
+
+### Checklist de configuración externa pendiente (no vive en el repo)
+
+- [ ] Supabase Auth: `site_url` y Redirect URLs de producción (hoy en localhost).
+- [ ] Supabase Auth: SMTP propio (el integrado limita a 2 correos/hora) y **Leaked password protection ON**.
+- [ ] Cloudflare: proxy + SSL Full (strict) + WAF/rate-limit en `/rest/v1/rpc/*` y `/auth/*`.
+- [ ] Plan de Supabase con backups/PITR confirmados para datos reales.
+
+## Estructura
+
+Ver [`CLAUDE.md`](./CLAUDE.md) → "Estructura de archivos". Resumen: `src/features/<dominio>/{components,hooks,pages,schemas}` + `src/shared/{components,ui,hooks,lib,types}` + `src/app/{providers,router}`.

@@ -29,6 +29,11 @@ export const registerSchema = z.object({
   radio_busqueda_km: z.number().int().min(1).max(20).nullable().optional(),
   categorias_interes: z.array(z.enum(JOB_CATEGORY_VALUES)).nullable().optional(),
   disponibilidad: z.enum(JOB_SCHEDULE_VALUES).nullable().optional(),
+  // Aceptación obligatoria de Términos y Aviso de Privacidad. z.literal(true)
+  // rechaza el valor por defecto (false), bloqueando el submit hasta marcarlo.
+  terms: z.literal(true, {
+    error: 'Debes aceptar los Términos y el Aviso de Privacidad.',
+  }),
 })
 
 export type RegisterFormData = z.infer<typeof registerSchema>

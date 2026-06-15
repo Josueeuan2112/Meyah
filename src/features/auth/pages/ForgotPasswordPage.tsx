@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
-import { ArrowLeft, ArrowRight, MailCheck, User } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Mail, MailCheck } from 'lucide-react'
 
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '@/features/auth/schemas/auth.schemas'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
                 type="email"
                 placeholder="tu@correo.com"
                 autoComplete="email"
-                icon={<User size={17} />}
+                icon={<Mail size={17} />}
                 aria-invalid={!!errors.email}
                 {...register('email')}
               />
