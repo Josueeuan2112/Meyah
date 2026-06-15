@@ -1,13 +1,25 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+// Validate required env vars at startup
+function requireEnv(name: string): string {
+  const value = Deno.env.get(name);
+  if (!value) throw new Error(`Missing required env var: ${name}`);
+  return value;
+}
+
+const RESEND_API_KEY = requireEnv("RESEND_API_KEY");
+const SUPABASE_URL = requireEnv("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "Meyah <notificaciones@meyah.com>";
 const APP_URL = Deno.env.get("APP_URL") ?? "https://meyah.com";
 
+const VALID_EVENT_TYPES = ["new_application", "viewed", "accepted", "rejected"] as const;
+type EventType = (typeof VALID_EVENT_TYPES)[number];
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 interface WebhookPayload {
-  event_type: "new_application" | "viewed" | "accepted" | "rejected";
+  event_type: EventType;
   application_id: string;
   candidato_id: string;
   job_id: string;
@@ -21,6 +33,16 @@ interface EmailTemplate {
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+// --- HTML escaping to prevent injection in email templates ---
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 // --- Idempotency check ---
 async function alreadySent(
@@ -40,12 +62,17 @@ async function recordSent(
   applicationId: string,
   eventType: string,
   recipientId: string,
-): Promise<void> {
-  await supabase.from("notification_logs").insert({
-    application_id: applicationId,
-    event_type: eventType,
-    recipient_id: recipientId,
-  });
+): Promise<boolean> {
+  // Use upsert with ignoreDuplicates to atomically claim the send slot.
+  // Returns false if the row already existed (another concurrent request won).
+  const { data } = await supabase
+    .from("notification_logs")
+    .upsert(
+      { application_id: applicationId, event_type: eventType, recipient_id: recipientId },
+      { onConflict: "application_id,event_type", ignoreDuplicates: true },
+    )
+    .select("id");
+  return (data?.length ?? 0) > 0;
 }
 
 // --- Opt-out check ---
@@ -95,13 +122,17 @@ async function getUserName(userId: string): Promise<string> {
 // --- Email templates ---
 function buildEmail(
   eventType: string,
-  recipientName: string,
+  rawRecipientName: string,
   recipientEmail: string,
-  jobTitle: string,
-  companyName: string,
+  rawJobTitle: string,
+  rawCompanyName: string,
   linkUrl: string,
   unsubscribeUrl: string,
 ): EmailTemplate {
+  // Escape user-supplied values to prevent HTML injection
+  const recipientName = escapeHtml(rawRecipientName);
+  const jobTitle = escapeHtml(rawJobTitle);
+  const companyName = escapeHtml(rawCompanyName);
   const footer = `
     <p style="margin-top:32px;padding-top:16px;border-top:1px solid #E5DCC9;font-size:12px;color:#8C8176;">
       Este correo fue enviado por Meyah. Si no deseas recibir más notificaciones,
@@ -219,8 +250,29 @@ async function sendEmail(template: EmailTemplate): Promise<void> {
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`Resend API error ${res.status}: ${body}`);
+    // Log details server-side only; throw generic message
+    console.error(`Resend API error ${res.status}: ${body}`);
+    throw new Error("Email delivery failed");
   }
+}
+
+// --- Validation helpers ---
+function isValidUUID(s: unknown): s is string {
+  return typeof s === "string" && UUID_RE.test(s);
+}
+
+function isValidEventType(s: unknown): s is EventType {
+  return typeof s === "string" && (VALID_EVENT_TYPES as readonly string[]).includes(s);
+}
+
+function validatePayload(body: unknown): WebhookPayload {
+  if (typeof body !== "object" || body === null) throw new Error("Invalid payload");
+  const b = body as Record<string, unknown>;
+  if (!isValidEventType(b.event_type)) throw new Error("Invalid event_type");
+  if (!isValidUUID(b.application_id)) throw new Error("Invalid application_id");
+  if (!isValidUUID(b.candidato_id)) throw new Error("Invalid candidato_id");
+  if (!isValidUUID(b.job_id)) throw new Error("Invalid job_id");
+  return b as unknown as WebhookPayload;
 }
 
 // --- Main handler ---
@@ -229,8 +281,18 @@ Deno.serve(async (req) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  // --- Authentication: only the DB trigger (via service role key) may call this ---
+  const authHeader = req.headers.get("Authorization");
+  if (authHeader !== `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
-    const payload: WebhookPayload = await req.json();
+    // --- Input validation ---
+    const payload = validatePayload(await req.json());
     const { event_type, application_id, candidato_id, job_id } = payload;
 
     // 1. Idempotency
@@ -252,16 +314,30 @@ Deno.serve(async (req) => {
 
     const { job, company } = result;
 
-    // 3. Determine recipient and check opt-out
+    // 3. Cross-validate: the application must belong to this candidate + job
+    const { data: appRow } = await supabase
+      .from("applications")
+      .select("id")
+      .eq("id", application_id)
+      .eq("candidato_id", candidato_id)
+      .eq("job_id", job_id)
+      .maybeSingle();
+
+    if (!appRow) {
+      return new Response(JSON.stringify({ skipped: "application_mismatch" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // 4. Determine recipient and check opt-out
     let recipientId: string;
     let linkUrl: string;
 
     if (event_type === "new_application") {
-      // Notify employer
       recipientId = company.owner_id;
       linkUrl = `${APP_URL}/dashboard/vacante/${job.id}/postulantes`;
     } else {
-      // Notify candidate
       recipientId = candidato_id;
       linkUrl =
         event_type === "rejected"
@@ -276,7 +352,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 4. Get recipient email and name
+    // 5. Get recipient email and name
     const recipientEmail = await getUserEmail(recipientId);
     if (!recipientEmail) {
       return new Response(JSON.stringify({ skipped: "no_email" }), {
@@ -288,7 +364,16 @@ Deno.serve(async (req) => {
     const recipientName = await getUserName(recipientId);
     const unsubscribeUrl = `${APP_URL}/mi-perfil?opt_out=1`;
 
-    // 5. Build and send email
+    // 6. Claim idempotency slot BEFORE sending (prevents race condition duplicates)
+    const claimed = await recordSent(application_id, event_type, recipientId);
+    if (!claimed) {
+      return new Response(JSON.stringify({ skipped: "already_sent" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // 7. Build and send email
     const template = buildEmail(
       event_type,
       recipientName,
@@ -301,19 +386,15 @@ Deno.serve(async (req) => {
 
     await sendEmail(template);
 
-    // 6. Record for idempotency
-    await recordSent(application_id, event_type, recipientId);
-
     return new Response(JSON.stringify({ sent: true, event_type }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Notification error:", error);
+    // Never leak internal error details to the caller
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Unknown error",
-      }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }

@@ -16,6 +16,8 @@ export function useUpdateProfile() {
         .update({
           nombre: values.nombre,
           phone: values.phone,
+          profesion: values.profesion || null,
+          bio: values.bio || null,
           lat_referencia: values.lat_referencia,
           lng_referencia: values.lng_referencia,
           radio_busqueda_km: values.radio_busqueda_km,

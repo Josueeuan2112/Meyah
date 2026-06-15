@@ -90,8 +90,12 @@ export default function JobDetailView({ jobId, distanciaM }: JobDetailViewProps)
       }
       return
     }
-    await navigator.clipboard.writeText(url)
-    toast.success('Enlace copiado')
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success('Enlace copiado')
+    } catch {
+      toast.error('No se pudo copiar el enlace')
+    }
   }
 
   const onSubmit = (values: ApplicationSchemaOutput) => {

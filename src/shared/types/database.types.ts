@@ -418,6 +418,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           categorias_interes: string[] | null
           created_at: string
           cv_path: string | null
@@ -430,12 +431,14 @@ export type Database = {
           lng_referencia: number | null
           nombre: string
           phone: string | null
+          profesion: string | null
           radio_busqueda_km: number | null
           tipo: Database["public"]["Enums"]["user_type"]
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           categorias_interes?: string[] | null
           created_at?: string
           cv_path?: string | null
@@ -448,12 +451,14 @@ export type Database = {
           lng_referencia?: number | null
           nombre: string
           phone?: string | null
+          profesion?: string | null
           radio_busqueda_km?: number | null
           tipo: Database["public"]["Enums"]["user_type"]
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           categorias_interes?: string[] | null
           created_at?: string
           cv_path?: string | null
@@ -466,6 +471,7 @@ export type Database = {
           lng_referencia?: number | null
           nombre?: string
           phone?: string | null
+          profesion?: string | null
           radio_busqueda_km?: number | null
           tipo?: Database["public"]["Enums"]["user_type"]
           updated_at?: string

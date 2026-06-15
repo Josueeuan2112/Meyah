@@ -26,7 +26,7 @@ export default function ConversationCard({ conversation: c }: ConversationCardPr
     >
       {/* Avatar */}
       <div className="grid h-11 w-11 flex-none place-items-center rounded-full bg-meyah-jade-50 text-sm font-semibold text-meyah-jade-700">
-        {c.other_name.charAt(0).toUpperCase()}
+        {(c.other_name.charAt(0) || '?').toUpperCase()}
       </div>
 
       {/* Content */}

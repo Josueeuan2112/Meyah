@@ -34,11 +34,17 @@ export default function ReportMessageDialog({ messageId, onClose }: ReportMessag
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="report-dialog-title"
+      onKeyDown={e => { if (e.key === 'Escape') onClose() }}
+    >
       <div className="w-full max-w-sm rounded-2xl border border-meyah-border-soft bg-white p-6 shadow-lg">
         <div className="mb-4 flex items-center gap-2.5">
           <Flag size={18} className="text-meyah-terracota-500" />
-          <h3 className="font-display text-[18px] font-semibold text-meyah-tinta-900">
+          <h3 id="report-dialog-title" className="font-display text-[18px] font-semibold text-meyah-tinta-900">
             Reportar mensaje
           </h3>
         </div>

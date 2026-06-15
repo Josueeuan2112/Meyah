@@ -3,19 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/shared/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
-export interface ConversationSummary {
-  id: string
-  job_id: string
-  candidato_id: string
-  empleador_id: string
-  created_at: string
-  job_titulo: string
-  company_nombre: string
-  other_name: string
-  last_message: string | null
-  last_message_at: string | null
-  unread_count: number
+function myConversationsQuery() {
+  return supabase.rpc('my_conversations')
 }
+
+export type ConversationSummary = NonNullable<
+  Awaited<ReturnType<typeof myConversationsQuery>>['data']
+>[number]
 
 export function useConversations() {
   const { user } = useAuth()
@@ -23,9 +17,9 @@ export function useConversations() {
   return useQuery({
     queryKey: ['conversations', 'list', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('my_conversations')
+      const { data, error } = await myConversationsQuery()
       if (error) throw error
-      return data as ConversationSummary[]
+      return data
     },
     enabled: !!user,
   })

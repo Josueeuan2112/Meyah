@@ -16,12 +16,17 @@ export function useSendMessage() {
     mutationFn: async ({ conversationId, body }: SendMessageInput) => {
       if (!user) throw new Error('Sesión no válida')
 
+      const trimmed = body.trim()
+      if (trimmed.length === 0 || trimmed.length > 2000) {
+        throw new Error('El mensaje debe tener entre 1 y 2000 caracteres')
+      }
+
       const { error } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
           sender_id: user.id,
-          body,
+          body: trimmed,
         })
 
       if (error) throw error

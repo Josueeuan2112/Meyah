@@ -18,6 +18,10 @@ export function useCreateReview() {
     mutationFn: async ({ applicationId, companyId, rating, comment }: CreateReviewInput) => {
       if (!user) throw new Error('Sesion no valida')
 
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+        throw new Error('La calificación debe ser un número entero entre 1 y 5')
+      }
+
       const { error } = await supabase.from('reviews').insert({
         application_id: applicationId,
         author_id: user.id,

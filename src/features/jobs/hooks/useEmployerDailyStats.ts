@@ -16,7 +16,7 @@ export function useEmployerDailyStats(days = 30) {
   const userId = user?.id
 
   return useQuery({
-    queryKey: ['analytics', 'daily', userId],
+    queryKey: ['analytics', 'daily', userId, days],
     queryFn: async () => {
       const { data, error } = await employerDailyStatsQuery(days)
       if (error) throw error

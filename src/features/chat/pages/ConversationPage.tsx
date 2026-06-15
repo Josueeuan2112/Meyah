@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { ArrowLeft, Loader2, Flag } from 'lucide-react'
 import { toast } from 'sonner'
@@ -21,16 +21,24 @@ export default function ConversationPage() {
   const markRead = useMarkMessagesRead(id)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [reportingMessageId, setReportingMessageId] = useState<string | null>(null)
+  const markedReadRef = useRef(false)
 
   const conversation = conversations?.find(c => c.id === id)
 
-  // Mark messages as read when viewing
+  // Stable ref to avoid re-firing on every mutation identity change
+  const markReadMutate = useCallback(() => markRead.mutate(), [markRead.mutate]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Mark messages as read when viewing (once per mount)
   useEffect(() => {
+    if (markedReadRef.current) return
     if (messages && messages.length > 0) {
       const hasUnread = messages.some(m => m.sender_id !== user?.id && !m.read_at)
-      if (hasUnread) markRead.mutate()
+      if (hasUnread) {
+        markedReadRef.current = true
+        markReadMutate()
+      }
     }
-  }, [messages]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [messages, user?.id, markReadMutate])
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {

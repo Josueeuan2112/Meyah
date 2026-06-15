@@ -134,6 +134,7 @@ export default function JobApplicantsPage() {
 
         {/* Header */}
         <button
+          type="button"
           onClick={() => navigate(-1)}
           className="mb-4 inline-flex items-center gap-1.5 text-[14px] text-meyah-tinta-600 hover:text-meyah-jade-900"
         >
@@ -222,7 +223,7 @@ export default function JobApplicantsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleViewCV(app.cv_path!, app.id)}
+                        onClick={() => handleViewCV(app.cv_path as string, app.id)}
                         disabled={loadingCvId === app.id}
                       >
                         <FileText size={14} className="mr-1.5" />

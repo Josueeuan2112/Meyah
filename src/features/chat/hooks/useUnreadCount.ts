@@ -13,7 +13,7 @@ export function useUnreadCount() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('unread_messages_count')
       if (error) throw error
-      return (data as number) ?? 0
+      return data ?? 0
     },
     enabled: !!user,
     refetchInterval: 60_000,
