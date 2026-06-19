@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { BellOff, MapPin, X } from 'lucide-react'
@@ -9,8 +9,10 @@ import type { ProfileSchemaInput, ProfileSchemaOutput } from '@/features/profile
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { MERIDA_CENTER } from '@/shared/lib/geo'
 
-const MERIDA_CENTER: [number, number] = [20.9674, -89.5926]
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea, input:not([disabled]), select, [tabindex]:not([tabindex="-1"])'
 
 interface EditProfileDrawerProps {
   open: boolean
@@ -23,6 +25,7 @@ interface EditProfileDrawerProps {
 }
 
 export default function EditProfileDrawer({ open, onClose, defaultValues, email, roleLabel, onSubmit, isSubmitting }: EditProfileDrawerProps) {
+  const panelRef = useRef<HTMLDivElement>(null)
   const {
     register,
     handleSubmit,
@@ -40,20 +43,34 @@ export default function EditProfileDrawer({ open, onClose, defaultValues, email,
     if (open) reset(defaultValues)
   }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Lock body scroll while drawer is open
+  // Trap de foco + Escape + scroll lock + restauración (espejo de BottomSheet).
   useEffect(() => {
     if (!open) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [open])
+    const previouslyFocused = document.activeElement as HTMLElement | null
 
-  // Close on Escape
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key !== 'Tab') return
+      const panel = panelRef.current
+      if (!panel) return
+      const focusables = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE))
+      if (focusables.length === 0) return
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
+
+    const prevOverflow = document.body.style.overflow
+    document.addEventListener('keydown', onKeyDown)
+    document.body.style.overflow = 'hidden'
+    panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus()
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.body.style.overflow = prevOverflow
+      previouslyFocused?.focus?.()
+    }
   }, [open, onClose])
 
   const lat = watch('lat_referencia')
@@ -72,6 +89,10 @@ export default function EditProfileDrawer({ open, onClose, defaultValues, email,
     <div className="fixed inset-0 z-[90] flex items-end justify-center sm:items-stretch sm:justify-end">
       <div className="absolute inset-0 bg-meyah-tinta-900/35 backdrop-blur-[2px]" onClick={onClose} />
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Editar tu perfil"
         className="relative flex max-h-[92vh] w-full flex-col rounded-t-panel bg-meyah-crema-50 shadow-lg sm:max-h-none sm:w-[440px] sm:rounded-none sm:rounded-l-panel"
         style={{ animation: 'rise .35s cubic-bezier(.2,.7,.3,1) both' }}
       >

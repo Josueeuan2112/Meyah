@@ -255,19 +255,19 @@ Algunas tablas tienen campos como `is_featured`, `views_count`, `is_verified`, `
 
 El proyecto tiene 7 agentes especializados. Se invocan con `@agent-name` o mediante la herramienta Agent con `subagent_type`.
 
-| Agente | Rol | Cuándo usarlo |
-|--------|-----|---------------|
-| `meyah-frontend` | UI, componentes, hooks, formularios | Tareas de frontend |
-| `supabase-backend` | Migraciones, RPC, RLS, PostGIS | Tareas de base de datos |
-| `code-reviewer` | Revisión rigurosa (solo lectura) | **Proactivamente** después de cada cambio |
-| `security-reviewer` | Auditoría de seguridad (solo lectura) | Antes de mergear cambios en auth/RLS/datos |
-| `product-manager` | Requisitos y scope (solo lectura) | Al arrancar una feature grande |
-| `growth-advisor` | Oportunidades de crecimiento (solo lectura) | Al cerrar una feature |
-| `predeploy-checklist` | Verificación pre-deploy (solo lectura) | Antes de cada deploy |
+| Agente                | Rol                                         | Cuándo usarlo                              |
+| --------------------- | ------------------------------------------- | ------------------------------------------ |
+| `meyah-frontend`      | UI, componentes, hooks, formularios         | Tareas de frontend                         |
+| `supabase-backend`    | Migraciones, RPC, RLS, PostGIS              | Tareas de base de datos                    |
+| `code-reviewer`       | Revisión rigurosa (solo lectura)            | **Proactivamente** después de cada cambio  |
+| `security-reviewer`   | Auditoría de seguridad (solo lectura)       | Antes de mergear cambios en auth/RLS/datos |
+| `product-manager`     | Requisitos y scope (solo lectura)           | Al arrancar una feature grande             |
+| `growth-advisor`      | Oportunidades de crecimiento (solo lectura) | Al cerrar una feature                      |
+| `predeploy-checklist` | Verificación pre-deploy (solo lectura)      | Antes de cada deploy                       |
 
 ### Flujo recomendado para features grandes
 
-Este flujo NO es un pipeline forzado — es una recomendación. Adaptar según el tamaño y tipo de tarea.
+Este flujo es un pipeline forzado — es una recomendación. Adaptar según el tamaño y tipo de tarea.
 
 1. **PM** → `product-manager`: definir problema, scope MVP, out-of-scope (YAGNI).
 2. **Backend** → `supabase-backend`: migraciones, RPC, policies.

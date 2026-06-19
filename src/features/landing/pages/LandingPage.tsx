@@ -147,7 +147,7 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-          <div className="rounded-panel border border-white/[0.16] bg-white/[0.08] p-[30px] backdrop-blur-[6px]">
+          <div className="rounded-panel border border-white/[0.16] bg-meyah-jade-700 p-[30px]">
             <div className="mb-[22px] grid h-[54px] w-[54px] place-items-center rounded-[15px] bg-white/[0.14] text-white"><Building2 size={20} /></div>
             <div className="mb-4 flex items-center">
               <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-white text-meyah-jade-700"><Building2 size={13} /></span>

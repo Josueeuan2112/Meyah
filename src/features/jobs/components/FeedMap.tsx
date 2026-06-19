@@ -7,23 +7,34 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { ICON_BY_CATEGORY } from '@/features/jobs/schemas/categories'
 import type { JobCategoryValue } from '@/features/jobs/schemas/categories'
 import type { NearbyJob } from '@/features/jobs/hooks/useNearbyJobs'
+import { MERIDA_CENTER } from '@/shared/lib/geo'
 
 // El CSS de Leaflet se importa aquí (no global): solo baja con el chunk del mapa.
 // Vite lo deduplica si otro componente de mapa también lo importa.
 
-const MERIDA_CENTER: [number, number] = [20.9674, -89.5926]
+// Cache de divIcons por `(categoria, active)`. El feed recrea sus props en cada
+// hover (cada tarjeta), así que sin cache renderizábamos React a string por
+// marcador en CADA render. Aquí el SVG y el L.divIcon se computan UNA sola vez
+// por combinación y se reutilizan; el cache vive a nivel de módulo.
+const pinCache = new Map<string, L.DivIcon>()
 
-function categoryPin(categoria: string, active = false) {
+function categoryPin(categoria: string, active = false): L.DivIcon {
+  const key = `${categoria}:${active ? 1 : 0}`
+  const cached = pinCache.get(key)
+  if (cached) return cached
+
   const Icon = ICON_BY_CATEGORY[categoria as JobCategoryValue] ?? ICON_BY_CATEGORY.otro
   const size = active ? 44 : 36
   const svg = renderToStaticMarkup(<Icon size={active ? 19 : 16} />)
   const bg = active ? 'var(--color-meyah-jade-700)' : 'var(--color-meyah-crema-100)'
-  return L.divIcon({
+  const icon = L.divIcon({
     className: '',
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};border:${active ? 3 : 2.5}px solid var(--color-meyah-jade-500);box-shadow:0 ${active ? 8 : 4}px ${active ? 18 : 12}px -3px rgba(0,0,0,${active ? 0.38 : 0.28}),inset 0 2px 3px rgba(255,255,255,${active ? 0.25 : 0.85}),inset 0 -2px 4px rgba(0,0,0,0.07);display:grid;place-items:center;color:${active ? '#fff' : 'var(--color-meyah-jade-500)'};">${svg}</div>`,
   })
+  pinCache.set(key, icon)
+  return icon
 }
 
 const userPin = L.divIcon({

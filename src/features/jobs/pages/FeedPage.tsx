@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { MapPin, Search, X, Map as MapIcon, List, SlidersHorizontal } from 'lucide-react'
+import { Loader2, MapPin, Search, X, Map as MapIcon, List, SlidersHorizontal } from 'lucide-react'
 
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useNearbyJobs } from '@/features/jobs/hooks/useNearbyJobs'
@@ -14,7 +14,10 @@ import { Button } from '@/shared/ui/button'
 
 export default function FeedPage() {
   const { profile } = useAuth()
-  const { data, isPending, isError } = useNearbyJobs()
+  const {
+    data, isPending, isError,
+    fetchNextPage, hasNextPage, isFetchingNextPage,
+  } = useNearbyJobs()
 
   const filters = useJobFilters()
 
@@ -25,7 +28,9 @@ export default function FeedPage() {
 
   const hasLocation = profile?.lat_referencia != null
 
-  const filtered = filters.filterJobs(data ?? [])
+  // Aplanamos todas las páginas a un solo array que alimenta lista Y mapa.
+  const allJobs = useMemo(() => data?.pages.flat() ?? [], [data])
+  const filtered = filters.filterJobs(allJobs)
 
   return (
     <div className="relative mx-auto max-w-700 lg:grid lg:grid-cols-[minmax(420px,0.92fr)_1.08fr]">
@@ -50,6 +55,7 @@ export default function FeedPage() {
                 value={filters.search}
                 onChange={e => filters.setSearch(e.target.value)}
                 placeholder="Busca por puesto o empresa…"
+                aria-label="Busca por puesto o empresa"
                 className="min-w-0 flex-1 bg-transparent text-[15px] text-meyah-tinta-900 outline-none placeholder:text-meyah-tinta-400"
               />
               {filters.search !== '' && (
@@ -157,7 +163,7 @@ export default function FeedPage() {
           <p className="px-4 pt-4.5 text-[13.5px] text-meyah-terracota-700 sm:px-6.5">
             No pudimos cargar las vacantes. Intenta de nuevo más tarde.
           </p>
-        ) : !data || data.length === 0 ? (
+        ) : allJobs.length === 0 ? (
           <p className="px-4 pt-4.5 text-[13.5px] text-meyah-tinta-600 sm:px-6.5">
             Aún no hay vacantes publicadas. Vuelve pronto.
           </p>
@@ -189,6 +195,22 @@ export default function FeedPage() {
                 />
               </div>
             ))}
+
+            {/* Cargar más: solo si la RPC indicó que quedan vacantes por traer.
+                El botón pagina sobre el dataset completo (sin ubicación o con
+                ella); los filtros del cliente se reaplican al array aplanado. */}
+            {hasNextPage && (
+              <button
+                type="button"
+                onClick={() => void fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="mx-auto mt-1 inline-flex items-center gap-2 rounded-full border border-meyah-border bg-white px-5 py-3 text-[14px] font-semibold text-meyah-jade-700 shadow-sm transition hover:border-meyah-jade-500/40 disabled:opacity-60"
+              >
+                {isFetchingNextPage && <Loader2 size={16} className="animate-spin" />}
+                {isFetchingNextPage ? 'Cargando…' : 'Cargar más vacantes'}
+              </button>
+            )}
+
             <p className="pt-3.5 text-center text-[12.5px] text-meyah-tinta-400">
               Mostrando empleo formal en Mérida y alrededores.
             </p>
@@ -267,7 +289,7 @@ export default function FeedPage() {
   )
 }
 
-/** Inline filter controls visible only on desktop (lg+) */
+// Filtros de jornada y salario, visibles inline en escritorio, en drawer en móvil
 function DesktopFilters({ filters }: { filters: ReturnType<typeof useJobFilters> }) {
   const { schedules, toggleSchedule, salaryMin, setSalaryMin, salaryMax, setSalaryMax } = filters
   const hasDesktopFilters = schedules.size > 0 || salaryMin !== null || salaryMax !== null
@@ -300,6 +322,7 @@ function DesktopFilters({ filters }: { filters: ReturnType<typeof useJobFilters>
           <input
             type="text"
             inputMode="numeric"
+            aria-label="Salario desde (MXN por mes)"
             value={salaryMin !== null ? salaryMin.toLocaleString('es-MX') : ''}
             onChange={e => {
               const raw = e.target.value.replace(/\D/g, '')
@@ -312,6 +335,7 @@ function DesktopFilters({ filters }: { filters: ReturnType<typeof useJobFilters>
           <input
             type="text"
             inputMode="numeric"
+            aria-label="Salario hasta (MXN por mes)"
             value={salaryMax !== null ? salaryMax.toLocaleString('es-MX') : ''}
             onChange={e => {
               const raw = e.target.value.replace(/\D/g, '')

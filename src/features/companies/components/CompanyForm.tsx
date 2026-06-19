@@ -1,16 +1,19 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2, MapPin } from 'lucide-react'
+import { toast } from 'sonner'
 import type { z } from 'zod'
 
 import { companySchema, type CompanyFormValues } from '@/features/companies/schemas/companySchema'
 import LocationPicker from '@/features/jobs/components/LocationPicker'
+import { geocodeAddress } from '@/shared/lib/geocode'
 import type { Company } from '@/shared/types'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
-
-const MERIDA_CENTER: [number, number] = [20.9674, -89.5926]
+import { MERIDA_CENTER } from '@/shared/lib/geo'
 
 interface CompanyFormProps {
   company?: Company
@@ -38,8 +41,37 @@ export default function CompanyForm({ company, onSubmit, isSubmitting = false }:
   })
 
   const nombre = watch('nombre')
+  const direccion = watch('direccion')
   const lat = watch('lat') ?? MERIDA_CENTER[0]
   const lng = watch('lng') ?? MERIDA_CENTER[1]
+
+  const [geocoding, setGeocoding] = useState(false)
+
+  // Geocodifica la dirección escrita y mueve el pin. Reutiliza la util de
+  // Nominatim (1 req/seg) que ya usa el registro del candidato: solo se llama
+  // al pulsar el botón, nunca por tecla. Con BUG 1 corregido, el mapa recentra.
+  const handleLocate = async () => {
+    const q = (direccion ?? '').trim()
+    if (!q) {
+      toast.error('Escribe primero la dirección para ubicarla en el mapa.')
+      return
+    }
+    setGeocoding(true)
+    try {
+      const result = await geocodeAddress(q)
+      if (result) {
+        setValue('lat', result.lat, { shouldValidate: true })
+        setValue('lng', result.lng, { shouldValidate: true })
+        toast.success('Ubicación encontrada. Ajusta el pin si hace falta.')
+      } else {
+        toast.error('No encontramos esa dirección en Mérida. Arrastra el pin directamente.')
+      }
+    } catch {
+      toast.error('No se pudo buscar la dirección. Intenta de nuevo.')
+    } finally {
+      setGeocoding(false)
+    }
+  }
 
   const nombreTrim = nombre.trim()
   const iniciales = nombreTrim
@@ -104,6 +136,15 @@ export default function CompanyForm({ company, onSubmit, isSubmitting = false }:
                 aria-invalid={!!errors.direccion}
                 {...register('direccion')}
               />
+              <button
+                type="button"
+                onClick={() => void handleLocate()}
+                disabled={geocoding}
+                className="inline-flex w-fit items-center gap-1.5 rounded-field bg-meyah-terracota-50 px-3 py-2 text-[12.5px] font-semibold text-meyah-terracota-700 transition hover:bg-meyah-terracota-100 disabled:opacity-60"
+              >
+                {geocoding ? <Loader2 size={14} className="animate-spin" /> : <MapPin size={14} />}
+                Ubicar en el mapa
+              </button>
               {errors.direccion && <p className="text-[12.5px] text-meyah-terracota-700">{errors.direccion.message}</p>}
             </div>
 

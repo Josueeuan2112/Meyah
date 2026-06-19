@@ -1,17 +1,15 @@
-import { BadgeCheck, Briefcase, Building2, Camera, MapPin, Pencil, Share2 } from 'lucide-react'
+import { BadgeCheck, Briefcase, Building2, MapPin, Pencil, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import type { Profile, Company } from '@/shared/types'
+import ImageUpload from '@/shared/components/ImageUpload'
+import { useUploadAvatar, AVATARS_BUCKET } from '@/features/profile/hooks/useUploadAvatar'
 import { Button } from '@/shared/ui/button'
 
 interface ProfileHeaderProps {
   profile: Profile
   company?: Company | null
   onEdit: () => void
-}
-
-function getIniciales(nombre: string): string {
-  return nombre.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?'
 }
 
 function formatMemberSince(dateStr: string): string {
@@ -27,7 +25,7 @@ function formatMemberSince(dateStr: string): string {
 
 export default function ProfileHeader({ profile, company, onEdit }: ProfileHeaderProps) {
   const esCand = profile.tipo === 'candidato'
-  const iniciales = getIniciales(profile.nombre)
+  const { uploadAvatar, isUploading } = useUploadAvatar()
 
   const fechaRegistro = new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(profile.created_at))
 
@@ -74,19 +72,24 @@ export default function ProfileHeader({ profile, company, onEdit }: ProfileHeade
       <div className="px-5 pb-6 sm:px-8">
         <div className="-mt-12 flex items-end justify-between gap-4 sm:-mt-14">
           {/* Avatar */}
-          <div className="relative flex-none" style={{ width: 104, height: 104 }}>
-            <div className="grid h-full w-full place-items-center rounded-full bg-meyah-jade-500 font-display text-[36px] font-semibold text-white ring-4 ring-white shadow-md select-none">
-              {iniciales}
-            </div>
-            <button
-              type="button"
-              aria-label="Cambiar foto"
-              className="absolute -bottom-0.5 -right-0.5 grid h-8 w-8 place-items-center rounded-full border-2 border-white bg-meyah-tinta-900 text-white shadow-md transition hover:bg-meyah-jade-700"
-              onClick={() => toast.info('Próximamente: subir foto de perfil')}
-            >
-              <Camera size={14} />
-            </button>
-          </div>
+          <ImageUpload
+            currentPath={profile.avatar_path}
+            legacyUrl={profile.avatar_url}
+            name={profile.nombre}
+            bucket={AVATARS_BUCKET}
+            tone="jade"
+            shape="circle"
+            size={104}
+            isUploading={isUploading}
+            updatedAt={profile.updated_at}
+            avatarClassName="ring-4 ring-white shadow-md"
+            onFile={file =>
+              uploadAvatar(file, {
+                onSuccess: () => toast.success('Foto de perfil actualizada'),
+                onError: err => toast.error(err.message),
+              })
+            }
+          />
 
           {/* Actions */}
           <div className="flex items-center gap-2.5 pb-1">

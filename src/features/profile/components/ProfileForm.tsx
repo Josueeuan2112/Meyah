@@ -8,8 +8,7 @@ import type { ProfileSchemaInput, ProfileSchemaOutput } from '@/features/profile
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-
-const MERIDA_CENTER: [number, number] = [20.9674, -89.5926]
+import { MERIDA_CENTER } from '@/shared/lib/geo'
 
 interface ProfileFormProps {
   defaultValues: ProfileSchemaInput

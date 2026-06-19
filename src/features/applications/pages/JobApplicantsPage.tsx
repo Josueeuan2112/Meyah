@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useState } from 'react'
-import { ArrowLeft, FileText, MapPin, MessageSquare, Phone, Users } from 'lucide-react'
+import { ArrowLeft, FileText, MapPin, MessageCircle, MessageSquare, Phone, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useJobDetail } from '@/features/jobs/hooks/useJobDetail'
@@ -10,17 +10,26 @@ import { useUpdateApplicationStatus } from '@/features/applications/hooks/useUpd
 import { useMarkApplicationsViewed } from '@/features/applications/hooks/useMarkApplicationsViewed'
 import { useCreateConversation } from '@/features/chat/hooks/useCreateConversation'
 import { getSignedCVUrl } from '@/features/profile/hooks/useCV'
+import { AVATARS_BUCKET } from '@/features/profile/hooks/useUploadAvatar'
 import { APPLICATION_STATUS_BADGE_CLASS, APPLICATION_STATUS_LABEL } from '@/features/applications/constants'
+import Avatar from '@/shared/components/Avatar'
 import { formatDistance } from '@/shared/lib/formatDistance'
 import { Button } from '@/shared/ui/button'
 
 const fechaFmt = new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
 
-function getIniciales(nombre: string): string {
-  const trimmed = nombre.trim()
-  return trimmed
-    ? trimmed.split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase()
-    : '?'
+// WhatsApp es el canal #1 en Mérida: cuando el empleador acepta y el teléfono
+// se revela, abrimos el chat con mensaje prellenado. Normaliza a formato wa.me:
+// solo dígitos, con lada de país 52 (México) sin duplicar.
+function whatsappLink(phone: string, nombre: string, titulo: string): string {
+  const digits = phone.replace(/\D/g, '')
+  const withCountry = digits.startsWith('52')
+    ? digits
+    : digits.length === 10
+      ? `52${digits}`
+      : digits
+  const msg = encodeURIComponent(`Hola ${nombre}, vimos tu postulación a ${titulo} en Meyah.`)
+  return `https://wa.me/${withCountry}?text=${msg}`
 }
 
 export default function JobApplicantsPage() {
@@ -192,9 +201,14 @@ export default function JobApplicantsPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3.5">
-                      <div className="grid h-12 w-12 flex-none place-items-center rounded-full bg-meyah-jade-500 font-display text-[18px] font-semibold text-white">
-                        {getIniciales(nombre)}
-                      </div>
+                      <Avatar
+                        path={app.candidato_avatar_path}
+                        name={nombre}
+                        bucket={AVATARS_BUCKET}
+                        tone="jade"
+                        shape="circle"
+                        size={48}
+                      />
                       <div>
                         <h3 className="text-[18px] font-semibold text-meyah-jade-900">{nombre}</h3>
                         <div className="mt-1 flex items-center gap-2">
@@ -219,11 +233,21 @@ export default function JobApplicantsPage() {
                       Por eso el enlace tel: aparece únicamente con valor; en null se
                       muestra un hint, no "sin teléfono". El CV (botón abajo) sí está
                       siempre disponible, independiente de esto. */}
-                  <div className="mt-3.5 flex items-center gap-2 text-[14px]">
+                  <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[14px]">
                     {app.candidato_phone ? (
-                      <a href={`tel:${app.candidato_phone}`} className="inline-flex items-center gap-1.5 font-medium text-meyah-jade-700 hover:underline">
-                        <Phone size={14} /> {app.candidato_phone}
-                      </a>
+                      <>
+                        <a href={`tel:${app.candidato_phone}`} className="inline-flex items-center gap-1.5 font-medium text-meyah-jade-700 hover:underline">
+                          <Phone size={14} /> {app.candidato_phone}
+                        </a>
+                        <a
+                          href={whatsappLink(app.candidato_phone, nombre, job.titulo)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366]/12 px-3 py-1.5 text-[13px] font-semibold text-[#128C7E] transition hover:bg-[#25D366]/20"
+                        >
+                          <MessageCircle size={14} /> WhatsApp
+                        </a>
+                      </>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 text-[13px] text-meyah-tinta-400">
                         <Phone size={14} /> El teléfono se revela al aceptar la postulación

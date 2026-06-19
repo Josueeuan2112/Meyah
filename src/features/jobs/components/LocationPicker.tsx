@@ -1,5 +1,5 @@
-import { useMemo, useRef } from 'react'
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
+import { useEffect, useMemo, useRef } from 'react'
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet'
 import type L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -25,6 +25,21 @@ function ClickHandler({ onPick }: { onPick: (lat: number, lng: number) => void }
       onPick(e.latlng.lat, e.latlng.lng)
     },
   })
+  return null
+}
+
+// react-leaflet solo lee `center` en el primer render. Cuando lat/lng cambian
+// desde fuera (buscador de dirección), el viewport no hace pan y el pin queda
+// fuera de pantalla. Este hijo escucha cambios de props y reposiciona la vista.
+// Compara contra el centro actual con tolerancia para no recentrar (ni crear
+// loops) cuando el cambio viene del propio arrastre del usuario.
+function RecenterOnChange({ lat, lng }: { lat: number; lng: number }) {
+  const map = useMap()
+  useEffect(() => {
+    const current = map.getCenter()
+    const moved = Math.abs(current.lat - lat) > 1e-5 || Math.abs(current.lng - lng) > 1e-5
+    if (moved) map.setView([lat, lng], map.getZoom())
+  }, [map, lat, lng])
   return null
 }
 
@@ -56,6 +71,7 @@ export default function LocationPicker({ lat, lng, onChange }: LocationPickerPro
         attribution="&copy; OpenStreetMap &copy; CARTO"
       />
       <ClickHandler onPick={onChange} />
+      <RecenterOnChange lat={lat} lng={lng} />
       <Marker
         position={[lat, lng]}
         icon={PIN}

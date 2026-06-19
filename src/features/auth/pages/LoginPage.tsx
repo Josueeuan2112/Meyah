@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { ArrowRight, Lock, Mail } from 'lucide-react'
 
@@ -23,7 +23,29 @@ function Wordmark({ className }: { className?: string }) {
 export default function LoginPage() {
   const { signIn, resendConfirmation } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [show, setShow] = useState(false)
+
+  // Retorno tras login: una página pública (ej. /vacante/:id) que pidió iniciar
+  // sesión nos manda con ?redirect=. Validamos contra el origen real para no
+  // convertir el login en un open-redirect. Un regex tipo /^\/(?!\/)/ NO basta:
+  // el navegador normaliza "\" a "/", así que "/\evil.com" resolvería a un
+  // dominio externo (phishing post-login). Rechazamos backslash y caracteres de
+  // control, y exigimos que la URL resuelta sea same-origin.
+  const redirectParam = searchParams.get('redirect')
+  const safeRedirect = (() => {
+    if (!redirectParam || !redirectParam.startsWith('/')) return null
+    // El backslash es el vector clave: el navegador normaliza "\" a "/", así que
+    // "/\evil.com" escaparía a otro dominio. Lo bloqueamos explícitamente y, como
+    // garantía final, exigimos que la URL resuelta sea del mismo origen.
+    if (redirectParam.includes('\\')) return null
+    try {
+      const u = new URL(redirectParam, window.location.origin)
+      return u.origin === window.location.origin ? u.pathname + u.search + u.hash : null
+    } catch {
+      return null
+    }
+  })()
 
   const {
     register,
@@ -68,6 +90,13 @@ export default function LoginPage() {
     // consultamos profiles.tipo puntualmente aquí y navegamos al destino correcto:
     // candidato → /inicio, empleador → /dashboard. Si la consulta falla, /inicio
     // es el fallback neutro (RequireRole corrige al empleador sin dejarlo varado).
+    // Si venimos de una página pública (?redirect=), volvemos ahí: la vacante o
+    // empresa que el visitante quería ver. Si no, destino por rol.
+    if (safeRedirect) {
+      navigate(safeRedirect)
+      return
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
     let destino = '/inicio'
     if (user) {

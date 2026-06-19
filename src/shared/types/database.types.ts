@@ -93,52 +93,106 @@ export type Database = {
       }
       companies: {
         Row: {
+          beneficios: string[]
+          categoria: string | null
+          correo: string | null
           created_at: string
           deleted_at: string | null
           descripcion: string
           direccion: string
+          facebook: string | null
+          historia: string | null
+          horarios: Json | null
           id: string
+          instagram: string | null
           is_verified: boolean
           lat: number | null
+          linkedin: string | null
           lng: number | null
+          logo_path: string | null
           logo_url: string | null
+          mision: string | null
           nombre: string
           owner_id: string
+          radio_km: number | null
+          razon_social: string | null
           sitio_web: string | null
+          tamano: string | null
+          telefono: string | null
+          tiktok: string | null
           updated_at: string
+          valores: string[]
           verified_at: string | null
+          vision: string | null
+          x: string | null
         }
         Insert: {
+          beneficios?: string[]
+          categoria?: string | null
+          correo?: string | null
           created_at?: string
           deleted_at?: string | null
           descripcion: string
           direccion: string
+          facebook?: string | null
+          historia?: string | null
+          horarios?: Json | null
           id?: string
+          instagram?: string | null
           is_verified?: boolean
           lat?: number | null
+          linkedin?: string | null
           lng?: number | null
+          logo_path?: string | null
           logo_url?: string | null
+          mision?: string | null
           nombre: string
           owner_id: string
+          radio_km?: number | null
+          razon_social?: string | null
           sitio_web?: string | null
+          tamano?: string | null
+          telefono?: string | null
+          tiktok?: string | null
           updated_at?: string
+          valores?: string[]
           verified_at?: string | null
+          vision?: string | null
+          x?: string | null
         }
         Update: {
+          beneficios?: string[]
+          categoria?: string | null
+          correo?: string | null
           created_at?: string
           deleted_at?: string | null
           descripcion?: string
           direccion?: string
+          facebook?: string | null
+          historia?: string | null
+          horarios?: Json | null
           id?: string
+          instagram?: string | null
           is_verified?: boolean
           lat?: number | null
+          linkedin?: string | null
           lng?: number | null
+          logo_path?: string | null
           logo_url?: string | null
+          mision?: string | null
           nombre?: string
           owner_id?: string
+          radio_km?: number | null
+          razon_social?: string | null
           sitio_web?: string | null
+          tamano?: string | null
+          telefono?: string | null
+          tiktok?: string | null
           updated_at?: string
+          valores?: string[]
           verified_at?: string | null
+          vision?: string | null
+          x?: string | null
         }
         Relationships: [
           {
@@ -150,27 +204,135 @@ export type Database = {
           },
         ]
       }
-      conversations: {
+      company_follows: {
         Row: {
           candidato_id: string
+          company_id: string
           created_at: string
-          empleador_id: string
-          id: string
-          job_id: string
         }
         Insert: {
           candidato_id: string
+          company_id: string
           created_at?: string
-          empleador_id: string
-          id?: string
-          job_id: string
         }
         Update: {
           candidato_id?: string
+          company_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_follows_candidato_id_fkey"
+            columns: ["candidato_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_follows_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_reports: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          reason: string
+          reporter_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          reason: string
+          reporter_id?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_saves: {
+        Row: {
+          candidato_id: string
+          company_id: string
+          created_at: string
+        }
+        Insert: {
+          candidato_id: string
+          company_id: string
+          created_at?: string
+        }
+        Update: {
+          candidato_id?: string
+          company_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_saves_candidato_id_fkey"
+            columns: ["candidato_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_saves_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          candidato_id: string
+          company_id: string | null
+          created_at: string
+          empleador_id: string
+          id: string
+          job_id: string | null
+        }
+        Insert: {
+          candidato_id: string
+          company_id?: string | null
+          created_at?: string
+          empleador_id: string
+          id?: string
+          job_id?: string | null
+        }
+        Update: {
+          candidato_id?: string
+          company_id?: string | null
           created_at?: string
           empleador_id?: string
           id?: string
-          job_id?: string
+          job_id?: string | null
         }
         Relationships: [
           {
@@ -178,6 +340,13 @@ export type Database = {
             columns: ["candidato_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
           {
@@ -432,6 +601,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_path: string | null
           avatar_url: string | null
           bio: string | null
           categorias_interes: string[] | null
@@ -452,6 +622,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avatar_path?: string | null
           avatar_url?: string | null
           bio?: string | null
           categorias_interes?: string[] | null
@@ -472,6 +643,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avatar_path?: string | null
           avatar_url?: string | null
           bio?: string | null
           categorias_interes?: string[] | null
@@ -785,6 +957,10 @@ export type Database = {
         Args: { p_lat: number; p_lng: number; p_max_m?: number }
         Returns: number
       }
+      company_followers_count: {
+        Args: { p_company_id: string }
+        Returns: number
+      }
       company_rating: {
         Args: { p_company_id: string }
         Returns: {
@@ -954,6 +1130,7 @@ export type Database = {
       job_applicants_near: {
         Args: { p_job_id: string }
         Returns: {
+          candidato_avatar_path: string
           candidato_id: string
           candidato_nombre: string
           candidato_phone: string
@@ -967,7 +1144,13 @@ export type Database = {
         }[]
       }
       jobs_near: {
-        Args: { p_lat?: number; p_lng?: number; p_max_m?: number }
+        Args: {
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_max_m?: number
+          p_offset?: number
+        }
         Returns: {
           categoria: string
           company_is_verified: boolean
@@ -987,12 +1170,14 @@ export type Database = {
         Args: never
         Returns: {
           candidato_id: string
+          company_id: string
           company_nombre: string
           created_at: string
           empleador_id: string
           id: string
           job_id: string
           job_titulo: string
+          kind: string
           last_message: string
           last_message_at: string
           other_name: string
@@ -1631,6 +1816,7 @@ export type Database = {
       }
       unlockrows: { Args: { "": string }; Returns: number }
       unread_messages_count: { Args: never; Returns: number }
+      unviewed_applications_count: { Args: never; Returns: number }
       updategeometrysrid: {
         Args: {
           catalogn_name: string

@@ -36,7 +36,22 @@ export function useCreateConversation() {
         .select('id')
         .single()
 
-      if (error) throw error
+      // 23505 = otra pestaña/doble clic creó la conversación en paralelo. No es
+      // un fallo: recuperamos la existente con el mismo criterio del find inicial
+      // (mismo patrón idempotente que useFollowState/useSaveState).
+      if (error) {
+        if (error.code === '23505') {
+          const { data: raced, error: raceErr } = await supabase
+            .from('conversations')
+            .select('id')
+            .eq('job_id', jobId)
+            .eq('candidato_id', candidatoId)
+            .single()
+          if (raceErr) throw raceErr
+          return raced.id
+        }
+        throw error
+      }
       return data.id
     },
     onSuccess: () => {

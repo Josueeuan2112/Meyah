@@ -1,9 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { X, DollarSign, Clock } from 'lucide-react'
 
 import { JOB_SCHEDULES } from '@/features/jobs/schemas/categories'
 import type { JobScheduleValue } from '@/features/jobs/schemas/categories'
 import { Button } from '@/shared/ui/button'
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
 
 interface FilterDrawerProps {
   schedules: Set<JobScheduleValue>
@@ -26,15 +29,33 @@ export default function FilterDrawer({
   resultCount,
   onClose,
 }: FilterDrawerProps) {
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  // Trap de foco + Escape + scroll lock + restauración (espejo de BottomSheet).
   useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null
+
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key !== 'Tab') return
+      const panel = panelRef.current
+      if (!panel) return
+      const focusables = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE))
+      if (focusables.length === 0) return
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
     }
+
     document.addEventListener('keydown', onKeyDown)
     document.body.style.overflow = 'hidden'
+    panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus()
+
     return () => {
       document.removeEventListener('keydown', onKeyDown)
       document.body.style.overflow = ''
+      previouslyFocused?.focus?.()
     }
   }, [onClose])
 
@@ -44,6 +65,10 @@ export default function FilterDrawer({
       onClick={onClose}
     >
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Filtros"
         onClick={e => e.stopPropagation()}
         className="relative w-full max-h-[85dvh] overflow-y-auto rounded-t-panel bg-meyah-crema-50 px-5 pb-6 pt-5 shadow-lg animate-[drawerUp_.32s_cubic-bezier(.2,.7,.3,1)_forwards]"
       >
@@ -141,6 +166,7 @@ function SalaryInput({
       <input
         type="text"
         inputMode="numeric"
+        aria-label={`Salario ${label.toLowerCase()} (MXN por mes)`}
         value={value !== null ? value.toLocaleString('es-MX') : ''}
         onChange={e => {
           const raw = e.target.value.replace(/\D/g, '')

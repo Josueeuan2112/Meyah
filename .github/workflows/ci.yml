@@ -4,7 +4,7 @@ name: CI
 # (tsconfig.app.json — el raíz es solution-style y no revisa nada), lint y build.
 on:
   push:
-    branches: [main]
+    branches: [main, V2-meyah]
   pull_request:
 
 jobs:

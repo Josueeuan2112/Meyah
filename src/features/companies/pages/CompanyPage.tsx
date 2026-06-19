@@ -3,21 +3,18 @@ import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router'
 
-import VerifiedBadge from '@/features/companies/components/VerifiedBadge'
-
 import { useMyCompany } from '@/features/companies/hooks/useMyCompany'
 import { useCreateCompany } from '@/features/companies/hooks/useCreateCompany'
-import { useUpdateCompany } from '@/features/companies/hooks/useUpdateCompany'
 import CompanyForm from '@/features/companies/components/CompanyForm'
+import CompanyEditor from '@/features/companies/components/CompanyEditor'
 import type { CompanyFormValues } from '@/features/companies/schemas/companySchema'
 
 export default function CompanyPage() {
   const navigate = useNavigate()
   const { data: company, isLoading, isError } = useMyCompany()
   const createMutation = useCreateCompany()
-  const updateMutation = useUpdateCompany()
 
-  //  Estado: cargando 
+  // Estado: cargando
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -26,7 +23,7 @@ export default function CompanyPage() {
     )
   }
 
-  //  Estado: error 
+  // Estado: error
   if (isError) {
     return (
       <div className="flex items-center justify-center px-4 py-20">
@@ -37,43 +34,42 @@ export default function CompanyPage() {
     )
   }
 
-  //  Estado: resuelto 
-  const isEditing = !!company
-  const isSubmitting = createMutation.isPending || updateMutation.isPending
+  // Empresa existente → editor enriquecido (móvil con sheets + desktop 2 columnas)
+  if (company) {
+    return (
+      <div className="mx-auto max-w-285 px-4 pt-8 pb-24 sm:px-6" style={{ animation: 'rise .5s cubic-bezier(.2,.7,.3,1) forwards' }}>
+        <div className="mb-5">
+          <span className="eyebrow">Tu empresa</span>
+          <h1 className="mt-2 text-[clamp(26px,3.5vw,34px)]">Editar empresa</h1>
+          <p className="mt-2 text-[14.5px] text-meyah-tinta-600">
+            Lo que configuras aquí es lo que ven los candidatos en tu perfil público.
+          </p>
+        </div>
+        <CompanyEditor company={company} />
+      </div>
+    )
+  }
 
-  const onSubmit = (values: CompanyFormValues) => {
-    if (isEditing) {
-      updateMutation.mutate(
-        { id: company.id, data: values },
-        {
-          onSuccess: () => toast.success('Empresa actualizada'),
-          onError:   () => toast.error('No se pudo actualizar la empresa'),
-        }
-      )
-    } else {
-      createMutation.mutate(values, {
-        onSuccess: () => { toast.success('Empresa creada'); void navigate('/dashboard') },
-        onError:   () => toast.error('No se pudo crear la empresa'),
-      })
-    }
+  // Sin empresa aún → flujo de creación
+  const onCreate = (values: CompanyFormValues) => {
+    createMutation.mutate(values, {
+      onSuccess: () => { toast.success('Empresa creada'); void navigate('/mi-empresa') },
+      onError:   () => toast.error('No se pudo crear la empresa'),
+    })
   }
 
   return (
     <div className="mx-auto max-w-230 px-4 pt-12 pb-22.5 sm:px-6.5">
       <div style={{ animation: 'rise .5s cubic-bezier(.2,.7,.3,1) forwards' }}>
         <span className="eyebrow">Tu empresa</span>
-        <div className="mt-2.5 flex items-center gap-2.5">
-          <h1 className="text-[clamp(30px,4vw,40px)]">Perfil de empresa</h1>
-          {company && <VerifiedBadge verified={company.is_verified} />}
-        </div>
+        <h1 className="mt-2.5 text-[clamp(30px,4vw,40px)]">Crea tu empresa</h1>
         <p className="mt-3 text-[15.5px] text-meyah-tinta-600">
-          Tu ubicación define a qué candidatos cercanos llegas.
+          Empieza con lo básico. Después podrás enriquecer tu perfil público.
         </p>
 
         <CompanyForm
-          company={company ?? undefined}
-          onSubmit={onSubmit}
-          isSubmitting={isSubmitting}
+          onSubmit={onCreate}
+          isSubmitting={createMutation.isPending}
         />
       </div>
     </div>

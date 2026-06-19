@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { BarChart3, Loader2 } from 'lucide-react'
 
 import { useAnalyticsSummary } from '@/features/analytics/hooks/useAnalyticsSummary'
 import type { AnalyticsRange } from '@/features/analytics/hooks/useAnalyticsSummary'
 import RangeSelector from '@/features/analytics/components/RangeSelector'
 import KpiGrid from '@/features/analytics/components/KpiGrid'
-import ActivityChart from '@/features/analytics/components/ActivityChart'
+// Recharts (~101 KB gzip) se difiere para que los KPIs/tablas pinten primero.
+const ActivityChart = lazy(() => import('@/features/analytics/components/ActivityChart'))
 import FunnelCard from '@/features/analytics/components/FunnelCard'
 import StatusCard from '@/features/analytics/components/StatusCard'
 import ProximityCard from '@/features/analytics/components/ProximityCard'
@@ -71,7 +72,15 @@ export default function AnalyticsPage() {
 
         {/* Activity Chart */}
         <div className="mb-4 lg:mb-5">
-          <ActivityChart daily={data.daily} />
+          <Suspense
+            fallback={
+              <div className="flex h-75 items-center justify-center rounded-panel border border-meyah-border-soft bg-white shadow-sm">
+                <Loader2 className="size-6 animate-spin text-meyah-jade-500" />
+              </div>
+            }
+          >
+            <ActivityChart daily={data.daily} />
+          </Suspense>
         </div>
 
         {/* Funnel + Status (2-column on desktop) */}

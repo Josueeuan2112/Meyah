@@ -27,9 +27,8 @@ import { JOB_CATEGORIES, JOB_SCHEDULES, ICON_BY_CATEGORY } from '@/features/jobs
 import type { JobCategoryValue } from '@/features/jobs/schemas/categories'
 import { geocodeAddress, reverseGeocodeZone } from '@/shared/lib/geocode'
 import { cn } from '@/shared/lib/utils'
+import { MERIDA_CENTER } from '@/shared/lib/geo'
 import { Button } from '@/shared/ui/button'
-
-const MERIDA_CENTER: [number, number] = [20.9674, -89.5926]
 
 // Wizard de registro sobre el layout del onboarding (panel izquierdo + mapa
 // a pantalla completa a la derecha):

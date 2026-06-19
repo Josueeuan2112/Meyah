@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react'
 
 import RootLayout from '@/shared/components/RootLayout'
 import AppLayout from '@/shared/components/AppLayout'
+import PublicLayout from '@/shared/components/PublicLayout'
 import RouteError from '@/shared/components/RouteError'
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute'
 import RequireRole from '@/features/auth/components/RequireRole'
@@ -39,6 +40,22 @@ export const router = createBrowserRouter([
     ],
   },
 
+  // ── Bloque público de contenido: vacante + empresa ───────────────────────
+  // La RLS deja a `anon` leer vacantes abiertas y empresas públicas, así que
+  // estas rutas viven FUERA de ProtectedRoute: un link compartido (WhatsApp,
+  // buscadores) abre la página sin pasar por login. Las acciones que requieren
+  // sesión (postularse, seguir, mensajear) se gatean dentro de cada página y
+  // mandan a /login con retorno. Un usuario logueado las ve igual que antes.
+  {
+    element: <PublicLayout />,
+    errorElement: <RouteError />,
+    hydrateFallbackElement: hydrateFallback,
+    children: [
+      { path: '/vacante/:id',  lazy: page(() => import('@/features/jobs/pages/JobDetailPage')) },
+      { path: '/empresas/:id', lazy: page(() => import('@/features/companies/pages/PublicCompanyPage')) },
+    ],
+  },
+
   // ── Bloque B: rutas protegidas con shell de app ──────────────────────────
   {
     element: <ProtectedRoute />,
@@ -60,7 +77,6 @@ export const router = createBrowserRouter([
             children: [
               { path: '/inicio',            lazy: page(() => import('@/features/jobs/pages/FeedPage')) },
               { path: '/mis-postulaciones', lazy: page(() => import('@/features/applications/pages/MyApplicationsPage')) },
-              { path: '/vacante/:id',       lazy: page(() => import('@/features/jobs/pages/JobDetailPage')) },
             ],
           },
 

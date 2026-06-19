@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { supabase } from '@/shared/lib/supabase'
@@ -6,7 +6,6 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 
 export function useUploadCV() {
   const { user, reloadProfile } = useAuth()
-  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (file: File) => {
@@ -38,7 +37,6 @@ export function useUploadCV() {
     },
     onSuccess: async () => {
       await reloadProfile()
-      void queryClient.invalidateQueries({ queryKey: ['profile'] })
     },
   })
 }

@@ -41,6 +41,11 @@ export function useMessages(conversationId: string | undefined) {
         () => {
           void queryClient.invalidateQueries({ queryKey: ['messages', 'thread', conversationId] })
           void queryClient.invalidateQueries({ queryKey: ['conversations', 'list'] })
+          // Este canal está filtrado por conversation_id (O(usuarios), sin fan-out
+          // global). Invalidar aquí el contador de no-leídos hace que el badge
+          // reaccione al instante en la conversación abierta, sustituyendo a la
+          // antigua suscripción global de useUnreadCount.
+          void queryClient.invalidateQueries({ queryKey: ['conversations', 'unread'] })
         },
       )
       .subscribe()
