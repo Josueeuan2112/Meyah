@@ -1,0 +1,24 @@
+-- 20260620130000_drop_increment_job_views_zombie.sql
+-- Elimina la funcion zombie public.increment_job_views(uuid).
+--
+-- Origen: 20260610000000_views_and_cleanup.sql la creo como SECURITY DEFINER
+-- con GRANT EXECUTE a authenticated. 20260614140000_analytics.sql introdujo
+-- record_job_view (con dedup de 30 min, owner-skip y evento) y declaro que
+-- "reemplaza el uso de increment_job_views en el frontend". El frontend ya NO
+-- la usa (grep: solo aparece en database.types.ts y en comentarios de
+-- migraciones).
+--
+-- Vulnerabilidad: increment_job_views hace
+--   update jobs set views_count = views_count + 1 where id = p_job_id
+-- sobre CUALQUIER job, sin dedup, sin owner-skip. Su +1 pasa el trigger C1
+-- (prevent_job_field_tampering acepta NEW = OLD + 1). Cualquier authenticated
+-- podia inflar el contador de cualquier vacante en bucle.
+-- Reproducido: candidato normal llamandola 3 veces -> views_count 0 -> 3.
+--
+-- Verificacion de seguridad antes del DROP (pg_depend + pg_proc + pg_trigger):
+--   - 0 dependencias no-internas en pg_depend.
+--   - 0 funciones la referencian en su cuerpo (prosrc).
+--   - 0 triggers la invocan.
+-- Por tanto el DROP es seguro (no hay callers internos).
+
+drop function if exists public.increment_job_views(uuid);

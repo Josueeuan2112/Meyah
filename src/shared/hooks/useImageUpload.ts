@@ -43,7 +43,11 @@ export function useImageUpload({ bucket, buildPath, persist, onPersisted }: UseI
 
       const { error } = await supabase.storage
         .from(bucket)
-        .upload(path, blob, { upsert: true, contentType: 'image/webp' })
+        // cacheControl largo (1 año) es seguro porque el display cache-bustea por
+        // versión (?v={updated_at} en Avatar.tsx): al cambiar la imagen cambia la
+        // URL, así que el navegador/CDN nunca sirve una versión vieja. Sin esto,
+        // Supabase aplica TTL de 1h y re-descarga del origen cada hora (egress).
+        .upload(path, blob, { upsert: true, contentType: 'image/webp', cacheControl: '31536000' })
 
       if (error) throw error
 

@@ -105,9 +105,6 @@ export default function ProfileHeader({ profile, company, onEdit }: ProfileHeade
         <div className="mt-4 min-w-0">
           <div className="flex flex-wrap items-center gap-2.5">
             <h1 className="text-[26px] sm:text-[30px]">{profile.nombre}</h1>
-            <span className="inline-flex items-center gap-1 rounded-full bg-meyah-jade-50 px-2.5 py-1 text-[12px] font-bold text-meyah-jade-700">
-              <BadgeCheck size={14} /> Verificado
-            </span>
           </div>
           <p className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[15px] text-meyah-tinta-600">
             {(profile.profesion || (esCand ? null : company?.nombre)) && (

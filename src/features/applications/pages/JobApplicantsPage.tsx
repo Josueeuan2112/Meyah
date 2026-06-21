@@ -283,7 +283,7 @@ export default function JobApplicantsPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleChat(app.candidato_id)}
-                      disabled={createConversation.isPending}
+                      disabled={createConversation.isPending && createConversation.variables?.candidatoId === app.candidato_id}
                       className="ml-auto"
                     >
                       <MessageSquare size={14} className="mr-1.5" /> Chat

@@ -4,6 +4,14 @@ import { supabase } from '@/shared/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import type { Company } from '@/shared/types'
 
+// Callbacks del caller para el toggle. El onSuccess/onError aquí coexisten con
+// los del hook (setQueryData/invalidate): en TanStack v5 ambos se ejecutan, no
+// se pisan. Permite al caller mostrar el toast SOLO cuando la mutación resuelve.
+interface ToggleOpts {
+  onSuccess?: () => void
+  onError?: (e: Error) => void
+}
+
 // Seguidores: contador público (RPC) 
 export function useFollowersCount(companyId: string | undefined) {
   return useQuery<number>({
@@ -68,7 +76,7 @@ export function useFollowState(companyId: string | undefined) {
   return {
     isFollowing: stateQuery.data ?? false,
     isLoading: stateQuery.isLoading,
-    toggle: (next: boolean) => toggle.mutate(next),
+    toggle: (next: boolean, opts?: ToggleOpts) => toggle.mutate(next, opts),
     isPending: toggle.isPending,
   }
 }
@@ -118,7 +126,7 @@ export function useSaveState(companyId: string | undefined) {
 
   return {
     isSaved: stateQuery.data ?? false,
-    toggle: (next: boolean) => toggle.mutate(next),
+    toggle: (next: boolean, opts?: ToggleOpts) => toggle.mutate(next, opts),
     isPending: toggle.isPending,
   }
 }
@@ -150,11 +158,14 @@ export function useStartCompanyConversation() {
     mutationFn: async (company: Pick<Company, 'id' | 'owner_id'>): Promise<string> => {
       if (!user) throw new Error('Sesión no válida')
 
+      // Solo conversaciones ACTIVAS: una soft-deleted (cascada de borrado de la
+      // empresa) no se reutiliza — ya no se pueden enviar mensajes en ella.
       const { data: existing, error: findErr } = await supabase
         .from('conversations')
         .select('id')
         .eq('company_id', company.id)
         .eq('candidato_id', user.id)
+        .is('deleted_at', null)
         .maybeSingle()
       if (findErr) throw findErr
       if (existing) return existing.id
@@ -169,9 +180,10 @@ export function useStartCompanyConversation() {
         })
         .select('id')
         .single()
-      // 23505 = otra pestaña/doble clic creó la conversación en paralelo. No es
-      // un fallo: recuperamos la existente con el mismo criterio del find inicial
-      // (mismo patrón idempotente que useFollowState/useSaveState).
+      // 23505 = el índice único (company_id, candidato_id) ya tenía una fila.
+      // Recuperamos SOLO si hay una activa (mismo criterio del find inicial); el
+      // unique parcial NO excluye deleted_at, así que una zombie también dispara
+      // el 23505. Si lo que bloquea es una zombie, no hay activa que devolver.
       if (error) {
         if (error.code === '23505') {
           const { data: raced, error: raceErr } = await supabase
@@ -179,8 +191,10 @@ export function useStartCompanyConversation() {
             .select('id')
             .eq('company_id', company.id)
             .eq('candidato_id', user.id)
-            .single()
+            .is('deleted_at', null)
+            .maybeSingle()
           if (raceErr) throw raceErr
+          if (!raced) throw new Error('Esta conversación ya no está disponible.')
           return raced.id
         }
         throw error

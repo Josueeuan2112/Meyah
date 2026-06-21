@@ -117,15 +117,19 @@ export default function PublicCompanyPage() {
   const handleFollow = () => {
     if (!canInteract) return
     const next = !follow.isFollowing
-    follow.toggle(next)
-    toast.success(next ? `Ahora sigues a ${company.nombre}` : 'Dejaste de seguir')
+    follow.toggle(next, {
+      onSuccess: () => toast.success(next ? `Ahora sigues a ${company.nombre}` : 'Dejaste de seguir'),
+      onError: () => toast.error('No se pudo completar la acción.'),
+    })
   }
 
   const handleSave = () => {
     if (!canInteract) return
     const next = !save.isSaved
-    save.toggle(next)
-    toast.success(next ? 'Guardada en favoritos' : 'Quitada de favoritos')
+    save.toggle(next, {
+      onSuccess: () => toast.success(next ? 'Guardada en favoritos' : 'Quitada de favoritos'),
+      onError: () => toast.error('No se pudo completar la acción.'),
+    })
   }
 
   // Secciones del cuerpo (solo se renderizan si hay datos)
@@ -221,8 +225,9 @@ export default function PublicCompanyPage() {
           {canInteract && (
             <button
               onClick={handleFollow}
+              disabled={follow.isPending}
               className={cn(
-                'inline-flex items-center gap-2 rounded-field border-[1.5px] px-4.5 py-3 text-[14px] font-semibold transition',
+                'inline-flex items-center gap-2 rounded-field border-[1.5px] px-4.5 py-3 text-[14px] font-semibold transition disabled:opacity-60',
                 follow.isFollowing
                   ? 'border-meyah-jade-500 bg-meyah-jade-500 text-white'
                   : 'border-meyah-jade-100 bg-white text-meyah-jade-700 hover:bg-meyah-jade-50',
@@ -235,9 +240,10 @@ export default function PublicCompanyPage() {
           {canInteract && (
             <button
               onClick={handleSave}
+              disabled={save.isPending}
               aria-label={save.isSaved ? 'Quitar de favoritos' : 'Guardar en favoritos'}
               className={cn(
-                'grid h-11.5 w-11.5 place-items-center rounded-field border-[1.5px] transition',
+                'grid h-11.5 w-11.5 place-items-center rounded-field border-[1.5px] transition disabled:opacity-60',
                 save.isSaved
                   ? 'border-meyah-terracota-100 bg-meyah-terracota-50 text-meyah-terracota-500'
                   : 'border-meyah-border bg-white text-meyah-tinta-600 hover:bg-meyah-crema-50',

@@ -314,6 +314,7 @@ export type Database = {
           candidato_id: string
           company_id: string | null
           created_at: string
+          deleted_at: string | null
           empleador_id: string
           id: string
           job_id: string | null
@@ -322,6 +323,7 @@ export type Database = {
           candidato_id: string
           company_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           empleador_id: string
           id?: string
           job_id?: string | null
@@ -330,6 +332,7 @@ export type Database = {
           candidato_id?: string
           company_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           empleador_id?: string
           id?: string
           job_id?: string | null
@@ -736,7 +739,7 @@ export type Database = {
           {
             foreignKeyName: "reviews_application_id_fkey"
             columns: ["application_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "applications"
             referencedColumns: ["id"]
           },
@@ -1126,7 +1129,6 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
-      increment_job_views: { Args: { p_job_id: string }; Returns: undefined }
       job_applicants_near: {
         Args: { p_job_id: string }
         Returns: {
@@ -1232,6 +1234,7 @@ export type Database = {
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
       record_job_view: { Args: { p_job_id: string }; Returns: undefined }
+      soft_delete_company: { Args: { p_company_id: string }; Returns: boolean }
       soft_delete_job: { Args: { p_job_id: string }; Returns: boolean }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }

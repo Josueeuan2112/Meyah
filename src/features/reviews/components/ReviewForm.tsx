@@ -7,7 +7,7 @@ import { Button } from '@/shared/ui/button'
 import { Textarea } from '@/shared/ui/textarea'
 import { StarRating } from '@/features/reviews/components/StarRating'
 import { useCreateReview } from '@/features/reviews/hooks/useCreateReview'
-import { useMyReviewForApplication } from '@/features/reviews/hooks/useMyReviewForApplication'
+import { useMyReviewForCompany } from '@/features/reviews/hooks/useMyReviewForCompany'
 import {
   reviewSchema,
   type ReviewFormData,
@@ -21,7 +21,11 @@ interface ReviewFormProps {
 }
 
 export function ReviewForm({ applicationId, companyId, onSuccess }: ReviewFormProps) {
-  const { data: existingReview, isLoading: isLoadingReview } = useMyReviewForApplication(applicationId)
+  // Detección por EMPRESA (no por postulación): la unicidad de reseñas es
+  // (author_id, company_id). Si el candidato ya reseñó esta empresa desde otra
+  // postulación, mostramos su reseña existente (read-only) en lugar de un form
+  // vacío que fallaría con 23505 al enviar.
+  const { data: existingReview, isLoading: isLoadingReview } = useMyReviewForCompany(companyId)
   const createReview = useCreateReview()
 
   const {
@@ -49,7 +53,8 @@ export function ReviewForm({ applicationId, companyId, onSuccess }: ReviewFormPr
     )
   }
 
-  // Ya existe una reseña para esta postulación
+  // Ya existe una reseña de este candidato para esta empresa (desde cualquier
+  // postulación): se muestra read-only.
   if (existingReview) {
     return (
       <div className="rounded-field border border-meyah-jade-500/20 bg-meyah-jade-50 p-4">

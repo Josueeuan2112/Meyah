@@ -39,8 +39,11 @@ export function useCreateReview() {
       void queryClient.invalidateQueries({ queryKey: ['reviews'] })
       void queryClient.invalidateQueries({ queryKey: ['company-rating', variables.companyId] })
       if (user) {
+        // La query "ya reseñé" ahora está cacheada por (user, company): tras
+        // crear, cualquier ReviewForm de esa empresa (entrado desde cualquier
+        // postulación) debe re-renderizar a read-only.
         void queryClient.invalidateQueries({
-          queryKey: ['my-review', user.id, variables.applicationId],
+          queryKey: ['my-review', user.id, variables.companyId],
         })
       }
     },
